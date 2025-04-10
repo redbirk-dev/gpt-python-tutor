@@ -9,7 +9,9 @@
 <body class="bg-black text-white font-sans min-h-screen flex items-center justify-center">
   <div class="w-full max-w-2xl bg-gray-900 p-6 rounded-xl shadow-xl space-y-6">
     <h1 class="text-4xl font-bold text-center text-blue-400">GPT Python Tutor</h1>
-    <div id="score" class="text-center text-green-400 text-lg">Score: 0</div>
+    <div class="text-center text-green-400 text-lg">
+      Score: <span id="score">0</span> | Attempts: <span id="attempts">0</span> | Streak: <span id="streak">0</span>
+    </div>
 
     <textarea id="prompt" placeholder="Ask a Python question..." class="w-full p-4 rounded bg-gray-800 text-white border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" rows="4"></textarea>
 
@@ -30,18 +32,33 @@
       <button class="choice-btn w-full py-2 rounded bg-gray-700 hover:bg-gray-600"></button>
       <button class="choice-btn w-full py-2 rounded bg-gray-700 hover:bg-gray-600"></button>
     </div>
+
+    <button id="nextBtn" onclick="startLesson()" class="hidden w-full bg-purple-600 hover:bg-purple-700 text-white py-3 px-4 rounded text-lg font-semibold">
+      Next Question
+    </button>
   </div>
 
   <script>
-    let score = 0;
+    let score = parseInt(localStorage.getItem('score')) || 0;
+    let attempts = parseInt(localStorage.getItem('attempts')) || 0;
+    let streak = parseInt(localStorage.getItem('streak')) || 0;
+    let hasGuessedWrong = false;
     const scoreEl = document.getElementById('score');
+    const attemptsEl = document.getElementById('attempts');
+    const streakEl = document.getElementById('streak');
     const responseEl = document.getElementById('response');
     const choicesEl = document.getElementById('choices');
+    const nextBtn = document.getElementById('nextBtn');
     const buttons = document.getElementsByClassName('choice-btn');
     let correctAnswer = '';
 
-    function updateScore() {
-      scoreEl.textContent = `Score: ${score}`;
+    function updateStats() {
+      scoreEl.textContent = score;
+      attemptsEl.textContent = attempts;
+      streakEl.textContent = streak;
+      localStorage.setItem('score', score);
+      localStorage.setItem('attempts', attempts);
+      localStorage.setItem('streak', streak);
     }
 
     async function askGPT() {
@@ -54,14 +71,17 @@
       const data = await res.json();
       responseEl.textContent = data.response;
       choicesEl.classList.add('hidden');
+      nextBtn.classList.add('hidden');
     }
 
     async function startLesson() {
+      hasGuessedWrong = false;
+      nextBtn.classList.add('hidden');
       const res = await fetch('/api/gpt-python', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          prompt: "Generate a beginner Python multiple choice question in raw JSON format like this: {\"question\": \"What does x do?\", \"options\": [\"A\", \"B\", \"C\", \"D\"], \"answer\": \"B\"}. Do NOT include any explanations or extra text, only valid JSON."
+          prompt: "Generate a beginner Python multiple choice question in raw JSON format like this: {\"question\": \"What does x do?\", \"options\": [\"A. x\", \"B. y\", \"C. z\", \"D. a\"], \"answer\": \"B. y\"}. Do NOT include explanations or extra text. ONLY valid JSON."
         })
       });
       const data = await res.json();
@@ -72,14 +92,26 @@
         correctAnswer = parsed.answer;
         parsed.options.forEach((opt, i) => {
           buttons[i].textContent = opt;
+          buttons[i].disabled = false;
           buttons[i].onclick = () => {
+            attempts++;
             if (opt === correctAnswer) {
-              score++;
+              if (!hasGuessedWrong) {
+                score++;
+                streak++;
+              } else {
+                streak = 0;
+              }
               responseEl.textContent = '✅ Correct!\n\n' + parsed.question;
+              updateStats();
+              Array.from(buttons).forEach(btn => btn.disabled = true);
+              nextBtn.classList.remove('hidden');
             } else {
-              responseEl.textContent = `❌ Incorrect. Correct answer: ${correctAnswer}\n\n` + parsed.question;
+              hasGuessedWrong = true;
+              streak = 0;
+              responseEl.textContent = `❌ Incorrect. Try again.\n\n` + parsed.question;
+              updateStats();
             }
-            updateScore();
           };
         });
         choicesEl.classList.remove('hidden');
@@ -88,6 +120,9 @@
         choicesEl.classList.add('hidden');
       }
     }
+
+    // On load, update the UI
+    updateStats();
   </script>
 </body>
 </html>
