@@ -81,7 +81,8 @@
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          prompt: "Generate a beginner Python multiple choice question in raw JSON format like this: {\"question\": \"What does x do?\", \"options\": [\"A. x\", \"B. y\", \"C. z\", \"D. a\"], \"answer\": \"B. y\"}. Do NOT include explanations or extra text. ONLY valid JSON."
+          prompt: "Generate an intermediate to advanced Python multiple choice question that tests real understanding of Python logic, functions, or behavior. Format it as raw JSON like this: {\"question\": \"...\", \"options\": [\"A. ...\", \"B. ...\", \"C. ...\", \"D. ...\"], \"answer\": \"B. ...\"}. Include Python code that must be reasoned through (e.g., nested logic, loops, or function calls). Do NOT include any explanation or extra text — only valid JSON."
+
         })
       });
       const data = await res.json();
