@@ -1,42 +1,74 @@
 from flask import Flask, request, jsonify, render_template
+from flask_cors import CORS
 import openai
 import os
+import re
+import json
 from dotenv import load_dotenv
-from flask_cors import CORS
 
-load_dotenv()  # Load .env file
-
-app = Flask(__name__)
-CORS(app)  # Allow requests from frontend
-
-# Set your OpenAI API key from .env
+load_dotenv()
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
-# Route to serve the frontend HTML
+app = Flask(__name__)
+CORS(app)
+
 @app.route('/')
 def index():
     return render_template('index.html')
 
-# GPT-powered API route
 @app.route('/api/gpt-python', methods=['POST'])
-def gpt_python():
+def ask_gpt():
     data = request.get_json()
-    prompt = data.get('prompt', '')
+    prompt = data.get('prompt')
 
+    # Call OpenAI API
+    response = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages=[{
+            "role": "user",
+            "content": prompt
+        }]
+    )
+
+    content = response.choices[0].message.content.strip()
+
+    # If it's not a quiz-style prompt, return raw GPT response
+    if not "options" in content or not "answer" in content:
+        return jsonify({'response': content})
+
+    # Try to parse as JSON
     try:
-        completion = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
-            messages=[
-                {"role": "system", "content": "You're a helpful Python tutor. Answer clearly and give examples."},
-                {"role": "user", "content": prompt}
-            ],
-            max_tokens=500,
-            temperature=0.7
-        )
-        reply = completion.choices[0].message["content"]
-        return jsonify({"response": reply})
-    except Exception as e:
-        return jsonify({"response": f"Error: {str(e)}"}), 500
+        question_data = json.loads(content)
+        question_text = question_data["question"]
+        options = question_data["options"]
+        correct_answer = question_data["answer"]
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
+        # Try to extract Python code from question
+        code_match = re.search(r"`(.*?)`", question_text)
+        if code_match:
+            code = code_match.group(1)
+            # Run the code in a safe environment
+            try:
+                local_vars = {}
+                exec(f"output = str({code})", {}, local_vars)
+                actual_output = local_vars["output"]
+
+                # Find option that contains actual_output
+                corrected_answer = None
+                for opt in options:
+                    if actual_output in opt:
+                        corrected_answer = opt
+                        break
+
+                if corrected_answer and corrected_answer != correct_answer:
+                    print(f"✅ Corrected GPT's answer from '{correct_answer}' to '{corrected_answer}'")
+                    question_data["answer"] = corrected_answer
+
+            except Exception as e:
+                print(f"⚠️ Error running code: {e}")
+
+        return jsonify({'response': json.dumps(question_data)})
+
+    except Exception as e:
+        print(f"⚠️ JSON parse error or unexpected format: {e}")
+        return jsonify({'response': content})
