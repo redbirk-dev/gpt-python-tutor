@@ -140,16 +140,34 @@
         nextBtn.classList.add('hidden');
       }
 
-      window.startLesson = async function() {
+      window.startLesson = async function () {
         hasGuessedWrong = false;
-        nextBtn.classList.add('hidden');
-        const res = await fetch('/api/gpt-python', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+        nextBtn.classList.add("hidden");
+
+        const res = await fetch("/api/gpt-python", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            prompt: "Generate an intermediate to advanced Python multiple choice question that tests real understanding of Python logic, functions, or behavior. Format it as raw JSON like this: {\"question\": \"...\", \"options\": [\"A. ...\", \"B. ...\", \"C. ...\", \"D. ...\"], \"answer\": \"B. ...\"}. Include Python code that must be reasoned through (e.g., nested logic, loops, or function calls). Do NOT include any explanation or extra text — only valid JSON."
-          })
+            prompt: `
+You are a Python tutor. Generate a multiple choice question that includes real Python code that must be evaluated.
+
+Return ONLY raw JSON in this format:
+
+{
+  "question": "<the full Python question INCLUDING code>",
+  "options": ["A. ...", "B. ...", "C. ...", "D. ..."],
+  "answer": "B. ..."
+}
+
+Rules:
+- Include real Python code (use \`print(...)\`, variables, logic, etc)
+- The question MUST include a code snippet
+- Output only valid JSON. No markdown. No explanations.
+- Ensure the correct answer is accurate.
+`
+          }),
         });
+
         const data = await res.json();
 
         try {
@@ -168,24 +186,24 @@
                 } else {
                   streak = 0;
                 }
-                responseEl.innerHTML = renderCodeBlock('✅ Correct!\n\n' + parsed.question);
+                responseEl.innerHTML = renderCodeBlock("✅ Correct!\n\n" + parsed.question);
                 updateStats();
-                Array.from(buttons).forEach(btn => btn.disabled = true);
-                nextBtn.classList.remove('hidden');
+                Array.from(buttons).forEach((btn) => (btn.disabled = true));
+                nextBtn.classList.remove("hidden");
               } else {
                 hasGuessedWrong = true;
                 streak = 0;
-                responseEl.innerHTML = renderCodeBlock(`❌ Incorrect. Try again.\n\n` + parsed.question);
+                responseEl.innerHTML = renderCodeBlock("❌ Incorrect. Try again.\n\n" + parsed.question);
                 updateStats();
               }
             };
           });
-          choicesEl.classList.remove('hidden');
+          choicesEl.classList.remove("hidden");
         } catch (e) {
-          responseEl.textContent = '⚠️ Could not parse GPT response as JSON.';
-          choicesEl.classList.add('hidden');
+          responseEl.textContent = "⚠️ Could not parse GPT response as JSON.";
+          choicesEl.classList.add("hidden");
         }
-      }
+      };
 
       updateStats();
     });
