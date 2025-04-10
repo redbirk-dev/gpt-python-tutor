@@ -4,7 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>GPT Python Tutor</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.tailwindcss.com">document.querySelectorAll('[onclick]').forEach(el => {
+    if (el.getAttribute('onclick') === 'startLesson()') el.onclick = window.startLesson;
+    if (el.getAttribute('onclick') === 'askGPT()') el.onclick = window.askGPT;
+  });
+</script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs/themes/prism-tomorrow.css">
   <style>
