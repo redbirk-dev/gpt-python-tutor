@@ -99,7 +99,7 @@
         .join('\n');
     }
 
-    document.addEventListener("DOMContentLoaded", () => {
+    window.addEventListener("load", () => {
       document.getElementById('startLessonBtn').addEventListener('click', window.startLesson);
       document.getElementById('askGPTBtn').addEventListener('click', window.askGPT);
       let score = parseInt(localStorage.getItem('score')) || 0;
