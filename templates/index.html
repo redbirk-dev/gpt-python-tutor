@@ -149,6 +149,32 @@
         hasGuessedWrong = false;
         nextBtn.classList.add("hidden");
 
+        const difficulty = document.getElementById('difficulty').value;
+        const promptText = `
+You are a Python tutor. Generate a multiple choice question that includes real Python code that must be evaluated.
+
+Mix up the question types. Use different phrasings such as:
+- What does this code print?
+- What is the value of ... after execution?
+- What does this function return?
+- Which line will cause an error?
+- What type is the result of this expression?
+
+Return ONLY raw JSON in this format:
+{
+  "question": "<the full Python question INCLUDING code>",
+  "options": ["A. ...", "B. ...", "C. ...", "D. ..."],
+  "answer": "B. ..."
+}
+
+Rules:
+- Include real Python code (use \`print(...)\`, variables, logic, etc)
+- Vary the type of reasoning: logic, scope, functions, errors, expressions
+- The question MUST include a code snippet
+- Output only valid JSON. No markdown. No explanations.
+- Ensure the correct answer is accurate.
+(Difficulty: ${difficulty.toUpperCase()})`
+
         const res = await fetch("/api/gpt-python", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
