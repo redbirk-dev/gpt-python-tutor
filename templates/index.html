@@ -13,7 +13,8 @@
       padding-left: 3.5em;
       counter-reset: linenumber;
     }
-    pre[class*="language-"] code {
+    pre[class*="language-"] code > span.line {
+      display: block;
       counter-increment: linenumber;
     }
     pre[class*="language-"] code > span.line::before {
@@ -24,9 +25,6 @@
       padding-right: 0.5em;
       text-align: right;
       opacity: 0.3;
-    }
-    pre code > span.line {
-      display: block;
     }
   </style>
 </head>
@@ -51,12 +49,18 @@
         Score: <span id="score">0</span> | Attempts: <span id="attempts">0</span> | Streak: <span id="streak">0</span>
       </div>
 
-      <div class="flex flex-col sm:flex-row gap-3">
-        <button onclick="startLesson()" class="w-full bg-green-600 hover:bg-green-700 text-white py-3 px-4 rounded text-lg font-semibold">
+      <div class="flex flex-col sm:flex-row gap-3 items-center">
+        <select id="difficulty" class="bg-gray-800 border border-gray-700 text-white rounded px-4 py-3 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-green-500">
+  <option value="easy">🟢 Easy</option>
+  <option value="medium" selected>🟡 Medium</option>
+  <option value="hard">🔴 Hard</option>
+</select>
+
+<button onclick="startLesson()" class="w-full bg-green-600 hover:bg-green-700 text-white py-3 px-4 rounded text-lg font-semibold">
           Teach Me Python
         </button>
         <details class="w-full">
-          <summary class="cursor-pointer bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded text-lg font-semibold text-center">Ask GPT a Question</summary>
+          <summary class="cursor-pointer bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded text-lg font-semibold text-center" onclick="event.stopPropagation()">Ask GPT a Question</summary>
           <div class="mt-3 space-y-2">
             <textarea id="prompt" placeholder="Ask a Python question..." class="w-full p-4 rounded bg-gray-800 text-white border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm" rows="4"></textarea>
             <button onclick="askGPT()" class="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded">Ask</button>
@@ -125,6 +129,7 @@
         };
         lessonContent.innerHTML = `<div class='whitespace-pre-wrap'>${marked.parse(lessons[topic])}</div>`;
         lessonContent.classList.remove('hidden');
+        lessonContent.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
 
       window.askGPT = async function() {
@@ -147,12 +152,18 @@
         const res = await fetch("/api/gpt-python", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            prompt: `
+          const difficulty = document.getElementById('difficulty').value;
+        const promptText = `
 You are a Python tutor. Generate a multiple choice question that includes real Python code that must be evaluated.
 
-Return ONLY raw JSON in this format:
+Mix up the question types. Use different phrasings such as:
+- What does this code print?
+- What is the value of ... after execution?
+- What does this function return?
+- Which line will cause an error?
+- What type is the result of this expression?
 
+Return ONLY raw JSON in this format:
 {
   "question": "<the full Python question INCLUDING code>",
   "options": ["A. ...", "B. ...", "C. ...", "D. ..."],
@@ -161,11 +172,16 @@ Return ONLY raw JSON in this format:
 
 Rules:
 - Include real Python code (use \`print(...)\`, variables, logic, etc)
+- Vary the type of reasoning: logic, scope, functions, errors, expressions
 - The question MUST include a code snippet
 - Output only valid JSON. No markdown. No explanations.
 - Ensure the correct answer is accurate.
-`
-          }),
+`print(...)\`, variables, logic, etc)
+- The question MUST include a code snippet
+- Output only valid JSON. No markdown. No explanations.
+- Ensure the correct answer is accurate.
+ (Difficulty: ${difficulty.toUpperCase()})`
+        }),
         });
 
         const data = await res.json();
