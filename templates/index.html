@@ -60,14 +60,14 @@
   <option value="hard">🔴 Hard</option>
 </select>
 
-<button onclick="startLesson()" class="w-full bg-green-600 hover:bg-green-700 text-white py-3 px-4 rounded text-lg font-semibold">
+<button id="startLessonBtn" class="w-full bg-green-600 hover:bg-green-700 text-white py-3 px-4 rounded text-lg font-semibold">
           Teach Me Python
         </button>
         <details class="w-full">
           <summary class="cursor-pointer bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded text-lg font-semibold text-center" onclick="event.stopPropagation()">Ask GPT a Question</summary>
           <div class="mt-3 space-y-2">
             <textarea id="prompt" placeholder="Ask a Python question..." class="w-full p-4 rounded bg-gray-800 text-white border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm" rows="4"></textarea>
-            <button onclick="askGPT()" class="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded">Ask</button>
+            <button id="askGPTBtn" class="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded">Ask</button>
           </div>
         </details>
       </div>
@@ -81,7 +81,7 @@
         <button class="choice-btn w-full py-2 rounded bg-gray-700 hover:bg-gray-600"></button>
       </div>
 
-      <button id="nextBtn" onclick="startLesson()" class="hidden w-full bg-purple-600 hover:bg-purple-700 text-white py-3 px-4 rounded text-lg font-semibold">
+      <button id="nextBtn" id="startLessonBtn" class="hidden w-full bg-purple-600 hover:bg-purple-700 text-white py-3 px-4 rounded text-lg font-semibold">
         Next Question
       </button>
 
@@ -100,6 +100,8 @@
     }
 
     document.addEventListener("DOMContentLoaded", () => {
+      document.getElementById('startLessonBtn').addEventListener('click', window.startLesson);
+      document.getElementById('askGPTBtn').addEventListener('click', window.askGPT);
       let score = parseInt(localStorage.getItem('score')) || 0;
       let attempts = parseInt(localStorage.getItem('attempts')) || 0;
       let streak = parseInt(localStorage.getItem('streak')) || 0;
