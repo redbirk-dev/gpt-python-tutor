@@ -12,6 +12,9 @@
       position: relative;
       padding-left: 3.5em;
       counter-reset: linenumber;
+      word-wrap: break-word; /* Ensures the text wraps within the box */
+      white-space: pre-wrap; /* Ensure the lines break within the container */
+      max-width: 100%; /* Prevent overflow */
     }
     pre[class*="language-"] code {
       display: block;
