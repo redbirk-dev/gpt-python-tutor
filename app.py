@@ -19,20 +19,7 @@ def index():
 @app.route('/api/gpt-python', methods=['POST'])
 def ask_gpt():
     data = request.get_json()
-    prompt = (
-        "You are a Python tutor. Generate an intermediate to advanced multiple-choice question "
-        "that includes a working Python code snippet, and has only one correct answer. "
-        "Make sure the question is valid, the code runs, and the correct answer is accurate. "
-        "Respond ONLY with raw JSON in this format:\n\n"
-        "{"
-        "\"question\": \"<Insert question that includes the code>\", "
-        "\"options\": [\"A. ...\", \"B. ...\", \"C. ...\", \"D. ...\"], "
-        "\"answer\": \"A. ...\""
-        "}\n\n"
-        "DO NOT explain or include anything else — just JSON with the code question and options. "
-        "The code should be Python 3 and focus on logic, scope, functions, or expressions. "
-        "Avoid trick questions or ambiguous output. Double-check your answer."
-    )
+    prompt = data.get("prompt","")
 
     # Call OpenAI API
     response = openai.ChatCompletion.create(
