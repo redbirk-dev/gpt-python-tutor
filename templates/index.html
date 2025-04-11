@@ -26,18 +26,6 @@
       text-align: right;
       opacity: 0.3;
     }
-    /* Ensure code blocks wrap and stay within screen bounds */
-    pre {
-      white-space: pre-wrap; /* Wrapping long lines */
-      word-wrap: break-word; /* Break words at line ends */
-      overflow-wrap: break-word; /* Breaks long words into next line */
-      max-width: 100%; /* Prevent overflow */
-      word-break: break-all; /* Allow long words to break across lines */
-      font-family: 'Courier New', Courier, monospace; /* For code formatting */
-      font-size: 0.875rem; /* Smaller font size for code */
-      line-height: 1.5; /* For better readability */
-      margin: 0; /* Ensure no additional margin */
-    }
   </style>
 </head>
 <body class="bg-black text-white font-sans min-h-screen flex items-start justify-center">
@@ -80,7 +68,7 @@
         </details>
       </div>
 
-      <pre class="whitespace-pre-wrap bg-gray-800 text-sm p-4 rounded border border-gray-700 font-mono min-h-[120px] transition-all duration-300 ease-in-out overflow-x-auto" id="response"><code class="language-python"></code></pre>
+      <pre class="whitespace-pre-wrap bg-gray-800 text-sm p-4 rounded border border-gray-700 font-mono min-h-[120px] transition-all duration-300 ease-in-out overflow-x-auto"><code id="response" class="language-python"></code></pre>
 
       <div id="choices" class="space-y-2 hidden">
         <button class="choice-btn w-full py-2 rounded bg-gray-700 hover:bg-gray-600"></button>
@@ -107,18 +95,36 @@
         .join('\n');
     }
 
-    function showLesson(topic) {
-      const lessons = {
-        vars: "**Variables & Data Types**\n\n```python\nx = 10\nname = 'Joe'\nis_ready = True\n```",
-        control: "**If, Else & Loops**\n\n```python\nif x > 5:\n    print('Big')\nelse:\n    print('Small')\n\nfor i in range(3):\n    print(i)\n```",
-        functions: "**Functions & Scope**\n\n```python\ndef greet(name):\n    return f\"Hello {name}\"\n\nprint(greet('Joe'))\n```",
-        lists: "**Lists & Dictionaries**\n\n```python\nnums = [1, 2, 3]\ndata = {'name': 'Joe', 'age': 17}\n```",
-        oop: "**Intro to OOP**\n\n```python\nclass Dog:\n    def __init__(self, name):\n        self.name = name\n\n    def bark(self):\n        print(self.name + ' says woof!')\n```"
+    function formatQuestionResponse(response) {
+      // Parse the response to extract the question, options, and answer
+      const parsedData = JSON.parse(response);
+
+      let questionText = parsedData.question || "";
+      let options = parsedData.options || [];
+      let answer = parsedData.answer || "";
+
+      // Format the question and options properly
+      const formattedOptions = options.map((opt, index) => {
+        return `<button class="choice-btn w-full py-2 rounded bg-gray-700 hover:bg-gray-600" data-answer="${opt}" onclick="handleOptionClick('${opt}')">${opt}</button>`;
+      }).join("");
+
+      return {
+        questionText: questionText,
+        optionsHtml: formattedOptions,
+        correctAnswer: answer
       };
-      const lessonContent = document.getElementById('lessonContent');
-      lessonContent.innerHTML = `<div class='whitespace-pre-wrap'>${marked.parse(lessons[topic])}</div>`;
-      lessonContent.classList.remove('hidden');
-      lessonContent.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function handleOptionClick(option) {
+      // Handle the option click logic here
+      const selectedAnswer = option;
+      const correctAnswer = document.getElementById("correctAnswer").textContent;
+
+      if (selectedAnswer === correctAnswer) {
+        alert("✅ Correct!");
+      } else {
+        alert("❌ Incorrect, try again.");
+      }
     }
 
     async function askGPT() {
@@ -128,9 +134,23 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt })
       });
+
       const data = await res.json();
-      document.getElementById('response').innerHTML = renderCodeBlock(data.response);
-      document.getElementById('choices').classList.add('hidden');
+
+      const formattedData = formatQuestionResponse(data.response);
+
+      // Render the formatted question and options in the page
+      const questionContainer = document.getElementById('response');
+      questionContainer.innerHTML = renderCodeBlock(formattedData.questionText);
+
+      const optionsContainer = document.getElementById('choices');
+      optionsContainer.innerHTML = formattedData.optionsHtml;
+      optionsContainer.classList.remove('hidden');
+
+      // Store the correct answer for validation
+      const correctAnswerContainer = document.getElementById('correctAnswer');
+      correctAnswerContainer.textContent = formattedData.correctAnswer;
+
       document.getElementById('nextBtn').classList.add('hidden');
     }
 
