@@ -12,14 +12,28 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 app = Flask(__name__)
 CORS(app)
 
+
 @app.route('/')
 def index():
     return render_template('index.html')
 
+
 @app.route('/api/gpt-python', methods=['POST'])
 def ask_gpt():
     data = request.get_json()
-    prompt = data.get("prompt","")
+
+    prompt = (
+        "You are a Python tutor. Generate a multiple choice question that includes real Python code "
+        "that must be evaluated. Return ONLY raw JSON in this format:\n\n"
+        "{"
+        "\"question\": \"<Insert question that includes the code>\", "
+        "\"options\": [\"A. ...\", \"B. ...\", \"C. ...\", \"D. ...\"], "
+        "\"answer\": \"A. ...\""
+        "}\n\n"
+        "DO NOT explain or include anything else — just JSON with the code question and options. "
+        "The code should be Python 3 and focus on logic, scope, functions, or expressions. "
+        "Avoid trick questions or ambiguous output. Double-check your answer."
+    )
 
     # Call OpenAI API
     response = openai.ChatCompletion.create(
@@ -72,6 +86,7 @@ def ask_gpt():
     except Exception as e:
         print(f"⚠️ JSON parse error or unexpected format: {e}")
         return jsonify({'response': content})
+
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
