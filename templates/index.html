@@ -132,7 +132,27 @@
         body: JSON.stringify({ prompt })
       });
       const data = await res.json();
-      document.getElementById('response').innerHTML = renderCodeBlock(data.response);
+
+      const responseText = data.response.trim();
+
+      // Check if the response is a multiple-choice question
+      if (responseText.startsWith("{")) {
+        const parsed = JSON.parse(responseText);
+        const question = parsed.question;
+        const options = parsed.options.join('<br>');
+        const correctAnswer = parsed.answer;
+
+        // Format the response with multiple choices
+        document.getElementById('response').innerHTML = `
+          <strong>${question}</strong><br>
+          ${options}<br>
+          <strong>Correct Answer:</strong> ${correctAnswer}
+        `;
+      } else {
+        // Handle free-form responses
+        document.getElementById('response').innerHTML = renderCodeBlock(responseText);
+      }
+
       document.getElementById('choices').classList.add('hidden');
       document.getElementById('nextBtn').classList.add('hidden');
     }
