@@ -175,7 +175,7 @@ Rules:
 - The question MUST include a code snippet
 - Output only valid JSON. No markdown. No explanations.
 - Ensure the correct answer is accurate.
-(Difficulty: ${difficulty.toUpperCase()})`
+(Difficulty: ${difficulty.toUpperCase()})`;
 
         const res = await fetch("/api/gpt-python", {
           method: "POST",
