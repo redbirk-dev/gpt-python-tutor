@@ -54,11 +54,22 @@
     <aside class="w-1/4 bg-gray-800 p-4 rounded-xl mr-4 space-y-2 text-sm">
       <h2 class="text-xl font-bold text-blue-400 mb-4">📘 Python Lessons</h2>
       <ul class="space-y-2">
+        <li><a href="#" onclick="showLesson('basics')" class="hover:underline text-blue-200">Python Basics & Setup</a></li>
         <li><a href="#" onclick="showLesson('vars')" class="hover:underline text-blue-200">Variables & Data Types</a></li>
         <li><a href="#" onclick="showLesson('control')" class="hover:underline text-blue-200">If, Else & Loops</a></li>
         <li><a href="#" onclick="showLesson('functions')" class="hover:underline text-blue-200">Functions & Scope</a></li>
         <li><a href="#" onclick="showLesson('lists')" class="hover:underline text-blue-200">Lists & Dictionaries</a></li>
-        <li><a href="#" onclick="showLesson('oop')" class="hover:underline text-blue-200">Intro to OOP</a></li>
+        <li><a href="#" onclick="showLesson('strings')" class="hover:underline text-blue-200">String Manipulation</a></li>
+        <li><a href="#" onclick="showLesson('files')" class="hover:underline text-blue-200">File Handling</a></li>
+        <li><a href="#" onclick="showLesson('exceptions')" class="hover:underline text-blue-200">Error Handling</a></li>
+        <li><a href="#" onclick="showLesson('modules')" class="hover:underline text-blue-200">Modules & Packages</a></li>
+        <li><a href="#" onclick="showLesson('oop')" class="hover:underline text-blue-200">Object-Oriented Programming</a></li>
+        <li><a href="#" onclick="showLesson('decorators')" class="hover:underline text-blue-200">Decorators & Generators</a></li>
+        <li><a href="#" onclick="showLesson('async')" class="hover:underline text-blue-200">Async Programming</a></li>
+        <li><a href="#" onclick="showLesson('testing')" class="hover:underline text-blue-200">Testing & Debugging</a></li>
+        <li><a href="#" onclick="showLesson('databases')" class="hover:underline text-blue-200">Database Operations</a></li>
+        <li><a href="#" onclick="showLesson('web')" class="hover:underline text-blue-200">Web Development</a></li>
+        <li><a href="#" onclick="showLesson('data_science')" class="hover:underline text-blue-200">Data Science Basics</a></li>
       </ul>
     </aside>
 
@@ -278,477 +289,1438 @@
 
     // Lesson content
     const lessons = {
-      vars: {
-        title: "Variables & Data Types",
+      basics: {
+        title: "Python Basics & Setup",
         content: `
-# Variables & Data Types in Python
+# Python Basics & Setup
 
-## Basic Variables
-Variables in Python are containers for storing data values. Unlike other programming languages, Python doesn't require explicit type declaration.
+## Installing Python
+1. Download Python from [python.org](https://python.org)
+2. Run the installer
+3. Check "Add Python to PATH"
+4. Verify installation:
+\`\`\`bash
+python --version
+pip --version
+\`\`\`
 
+## Python Shell
+Interactive Python shell for quick testing:
 \`\`\`python
-# Numbers
-age = 25          # Integer
-height = 1.75     # Float
-complex_num = 3 + 4j  # Complex number
+>>> print("Hello, World!")
+Hello, World!
+>>> 2 + 2
+4
+>>> exit()
+\`\`\`
 
-# Strings
-name = "Python"   # String with double quotes
-message = 'Hello' # String with single quotes
-multi_line = """
-This is a
-multi-line
+## Writing Your First Program
+Create a file named \`hello.py\`:
+\`\`\`python
+# This is a comment
+print("Hello, World!")  # This is also a comment
+
+# Variables
+name = "Python"
+version = 3.12
+print(f"Welcome to {name} {version}!")
+\`\`\`
+
+## Running Python Files
+\`\`\`bash
+python hello.py
+\`\`\`
+
+## Code Style (PEP 8)
+- Use 4 spaces for indentation
+- Maximum line length: 79 characters
+- Use descriptive variable names
+- Add comments for complex logic
+- Use docstrings for functions and classes
+
+## Best Practices
+1. Always use virtual environments
+2. Keep code organized in modules
+3. Write clear, readable code
+4. Use version control (Git)
+5. Document your code
+`
+      },
+      strings: {
+        title: "String Manipulation",
+        content: `
+# String Manipulation in Python
+
+## String Creation
+\`\`\`python
+# Different ways to create strings
+single_quotes = 'Hello'
+double_quotes = "World"
+triple_quotes = """
+Multi-line
 string
 """
-
-# Booleans
-is_active = True
-is_finished = False
-
-# None type
-empty_value = None
+raw_string = r"C:\\new\\text"  # Raw string
 \`\`\`
 
-## Type Conversion
-Python allows you to convert between different data types:
-
+## String Methods
 \`\`\`python
-# Converting between types
-num_str = "123"
-num_int = int(num_str)    # String to integer
-num_float = float(num_str)  # String to float
-str_num = str(123)        # Integer to string
+text = "Python Programming"
+
+# Case manipulation
+print(text.upper())      # PYTHON PROGRAMMING
+print(text.lower())      # python programming
+print(text.title())      # Python Programming
+print(text.capitalize()) # Python programming
+
+# Search and replace
+print(text.find('Pro'))  # 7
+print(text.replace('Python', 'Java'))  # Java Programming
+
+# Splitting and joining
+words = text.split()     # ['Python', 'Programming']
+joined = '-'.join(words) # Python-Programming
+
+# Stripping whitespace
+text = "  Python  "
+print(text.strip())      # "Python"
+print(text.lstrip())     # "Python  "
+print(text.rstrip())     # "  Python"
 \`\`\`
 
-## Type Checking
-You can check the type of a variable using the \`type()\` function:
-
+## String Formatting
 \`\`\`python
-x = 42
-print(type(x))  # Output: <class 'int'>
+name = "Alice"
+age = 25
 
-y = "Hello"
-print(type(y))  # Output: <class 'str'>
+# %-formatting (old style)
+print("Name: %s, Age: %d" % (name, age))
+
+# str.format()
+print("Name: {}, Age: {}".format(name, age))
+print("Name: {n}, Age: {a}".format(n=name, a=age))
+
+# f-strings (Python 3.6+)
+print(f"Name: {name}, Age: {age}")
+print(f"Age in 5 years: {age + 5}")
 \`\`\`
 
-## Best Practices
-1. Use meaningful variable names
-2. Follow Python naming conventions (snake_case)
-3. Initialize variables before using them
-4. Use appropriate data types for your needs
-`
-      },
-      control: {
-        title: "If, Else & Loops",
-        content: `
-# Control Flow in Python
-
-## Conditional Statements
-Python uses indentation to define code blocks in if-else statements.
-
+## String Operations
 \`\`\`python
-# Basic if-else
-age = 18
-if age >= 18:
-    print("You are an adult")
-else:
-    print("You are a minor")
+# Concatenation
+str1 = "Hello"
+str2 = "World"
+result = str1 + " " + str2  # Hello World
 
-# if-elif-else
-score = 85
-if score >= 90:
-    grade = 'A'
-elif score >= 80:
-    grade = 'B'
-elif score >= 70:
-    grade = 'C'
-else:
-    grade = 'D'
+# Repetition
+print("Ha" * 3)  # HaHaHa
 
-# Nested if statements
-age = 20
-has_ticket = True
-if age >= 18:
-    if has_ticket:
-        print("You can enter the venue")
-    else:
-        print("Please purchase a ticket")
-else:
-    print("You must be 18 or older")
+# Slicing
+text = "Python Programming"
+print(text[0:6])    # Python
+print(text[7:])     # Programming
+print(text[-11:])   # Programming
+print(text[::-1])   # gnimmargorP nohtyP
 \`\`\`
 
-## Loops
-
-### For Loops
-Used for iterating over a sequence (list, tuple, string, etc.)
-
+## String Methods for Validation
 \`\`\`python
-# Basic for loop
-for i in range(5):
-    print(i)  # Prints 0 to 4
-
-# Loop with start, stop, and step
-for i in range(2, 10, 2):
-    print(i)  # Prints 2, 4, 6, 8
-
-# Loop through a list
-fruits = ['apple', 'banana', 'cherry']
-for fruit in fruits:
-    print(fruit)
-
-# Loop with enumerate
-for index, fruit in enumerate(fruits):
-    print(f"{index}: {fruit}")
-\`\`\`
-
-### While Loops
-Repeats as long as a condition is true
-
-\`\`\`python
-# Basic while loop
-count = 0
-while count < 5:
-    print(count)
-    count += 1
-
-# Break statement
-while True:
-    user_input = input("Enter 'q' to quit: ")
-    if user_input == 'q':
-        break
-    print("You entered:", user_input)
-
-# Continue statement
-for i in range(10):
-    if i % 2 == 0:
-        continue  # Skip even numbers
-    print(i)  # Prints only odd numbers
+# Check string properties
+text = "Python3.12"
+print(text.isalnum())    # True
+print(text.isalpha())    # False
+print(text.isdigit())    # False
+print(text.isnumeric())  # False
+print(text.isdecimal())  # False
+print(text.isspace())    # False
+print(text.isupper())    # False
+print(text.islower())    # False
 \`\`\`
 
 ## Best Practices
-1. Use meaningful conditions
-2. Keep loops simple and readable
-3. Avoid infinite loops
-4. Use appropriate loop types for your needs
-5. Consider using list comprehensions for simple iterations
+1. Use f-strings for string formatting
+2. Use triple quotes for multi-line strings
+3. Use raw strings for file paths
+4. Be careful with string concatenation in loops
+5. Use appropriate string methods for validation
 `
       },
-      functions: {
-        title: "Functions & Scope",
+      files: {
+        title: "File Handling",
         content: `
-# Functions in Python
+# File Handling in Python
 
-## Function Definition
-Functions are defined using the \`def\` keyword:
-
+## Opening Files
 \`\`\`python
-# Basic function
-def greet():
-    print("Hello, World!")
+# Basic file operations
+with open('file.txt', 'r') as file:
+    content = file.read()
+    print(content)
 
-# Function with parameters
-def greet_person(name):
-    print(f"Hello, {name}!")
+# Different modes
+with open('file.txt', 'w') as file:  # Write mode
+    file.write('Hello, World!')
 
-# Function with default parameters
-def greet_with_title(name, title="Mr."):
-    print(f"Hello, {title} {name}!")
+with open('file.txt', 'a') as file:  # Append mode
+    file.write('\\nNew line')
 
-# Function with multiple parameters
-def calculate_total(price, quantity, discount=0):
-    total = price * quantity * (1 - discount)
-    return total
+with open('file.txt', 'r+') as file:  # Read and write
+    content = file.read()
+    file.write('\\nAdded content')
 \`\`\`
 
-## Return Values
-Functions can return single or multiple values:
-
+## Reading Files
 \`\`\`python
-# Single return value
-def square(number):
-    return number ** 2
+# Read entire file
+with open('file.txt', 'r') as file:
+    content = file.read()
+    print(content)
 
-# Multiple return values
-def get_coordinates():
-    x = 10
-    y = 20
-    return x, y  # Returns a tuple
+# Read line by line
+with open('file.txt', 'r') as file:
+    for line in file:
+        print(line.strip())
 
-# Using return values
-result = square(5)  # result = 25
-x, y = get_coordinates()  # x = 10, y = 20
+# Read all lines into a list
+with open('file.txt', 'r') as file:
+    lines = file.readlines()
+    print(lines)
+
+# Read specific number of characters
+with open('file.txt', 'r') as file:
+    chunk = file.read(100)
+    print(chunk)
 \`\`\`
 
-## Variable Scope
-
-### Local Scope
-Variables defined inside a function are local to that function:
-
+## Writing Files
 \`\`\`python
-def my_function():
-    local_var = 10
-    print(local_var)  # Works
-    return local_var
+# Write single string
+with open('file.txt', 'w') as file:
+    file.write('Hello, World!')
 
-# print(local_var)  # Error: local_var is not defined
+# Write multiple lines
+lines = ['Line 1\\n', 'Line 2\\n', 'Line 3\\n']
+with open('file.txt', 'w') as file:
+    file.writelines(lines)
+
+# Append to file
+with open('file.txt', 'a') as file:
+    file.write('\\nNew line')
 \`\`\`
 
-### Global Scope
-Variables defined outside functions are global:
-
+## Working with CSV Files
 \`\`\`python
-global_var = 100
+import csv
 
-def access_global():
-    print(global_var)  # Can access global variable
+# Reading CSV
+with open('data.csv', 'r') as file:
+    csv_reader = csv.reader(file)
+    for row in csv_reader:
+        print(row)
 
-def modify_global():
-    global global_var  # Declare we want to modify global variable
-    global_var = 200   # Modify global variable
+# Writing CSV
+data = [
+    ['Name', 'Age', 'City'],
+    ['John', '25', 'New York'],
+    ['Alice', '30', 'London']
+]
+with open('data.csv', 'w', newline='') as file:
+    csv_writer = csv.writer(file)
+    csv_writer.writerows(data)
+
+# Using DictReader and DictWriter
+with open('data.csv', 'r') as file:
+    reader = csv.DictReader(file)
+    for row in reader:
+        print(row['Name'], row['Age'])
 \`\`\`
 
-## Lambda Functions
-Anonymous functions defined with the \`lambda\` keyword:
-
+## Working with JSON Files
 \`\`\`python
-# Basic lambda
-square = lambda x: x ** 2
+import json
 
-# Lambda with multiple arguments
-add = lambda x, y: x + y
+# Reading JSON
+with open('data.json', 'r') as file:
+    data = json.load(file)
+    print(data)
 
-# Using lambda with built-in functions
-numbers = [1, 2, 3, 4, 5]
-squared = list(map(lambda x: x ** 2, numbers))
-\`\`\`
-
-## Best Practices
-1. Use descriptive function names
-2. Keep functions focused on a single task
-3. Use type hints for better code documentation
-4. Document functions with docstrings
-5. Avoid modifying global variables when possible
-6. Use appropriate parameter defaults
-`
-      },
-      lists: {
-        title: "Lists & Dictionaries",
-        content: `
-# Lists and Dictionaries in Python
-
-## Lists
-Lists are ordered, mutable collections of items:
-
-\`\`\`python
-# Creating lists
-numbers = [1, 2, 3, 4, 5]
-mixed_list = [1, "hello", 3.14, True]
-empty_list = []
-
-# List operations
-numbers.append(6)        # Add to end
-numbers.insert(0, 0)     # Insert at index
-numbers.remove(3)        # Remove value
-popped = numbers.pop()   # Remove and return last item
-length = len(numbers)    # Get length
-
-# List slicing
-subset = numbers[1:4]    # Get items from index 1 to 3
-reversed_list = numbers[::-1]  # Reverse list
-
-# List comprehension
-squares = [x**2 for x in range(10)]
-even_numbers = [x for x in range(10) if x % 2 == 0]
-\`\`\`
-
-## Dictionaries
-Dictionaries are unordered collections of key-value pairs:
-
-\`\`\`python
-# Creating dictionaries
-person = {
-    "name": "John",
-    "age": 30,
-    "city": "New York"
+# Writing JSON
+data = {
+    'name': 'John',
+    'age': 30,
+    'city': 'New York'
 }
-empty_dict = {}
-
-# Dictionary operations
-person["email"] = "john@example.com"  # Add/update key
-del person["age"]                     # Remove key
-value = person.get("name")            # Safe access
-keys = person.keys()                  # Get all keys
-values = person.values()              # Get all values
-
-# Nested dictionaries
-company = {
-    "name": "Tech Corp",
-    "employees": {
-        "john": {"role": "developer", "years": 5},
-        "alice": {"role": "manager", "years": 7}
-    }
-}
-
-# Dictionary comprehension
-squares = {x: x**2 for x in range(5)}
+with open('data.json', 'w') as file:
+    json.dump(data, file, indent=4)
 \`\`\`
 
-## Common Operations
-
-### List Operations
+## File System Operations
 \`\`\`python
-# Sorting
-numbers.sort()                    # In-place sort
-sorted_numbers = sorted(numbers)  # New sorted list
+import os
 
-# Finding elements
-index = numbers.index(4)          # Get index of value
-count = numbers.count(2)          # Count occurrences
+# Directory operations
+os.mkdir('new_directory')
+os.makedirs('parent/child/grandchild', exist_ok=True)
+os.rmdir('empty_directory')
+os.removedirs('parent/child/grandchild')
 
-# Combining lists
-combined = numbers + [6, 7, 8]    # Concatenate lists
-extended = numbers.extend([6, 7, 8])  # Extend in-place
-\`\`\`
+# File operations
+os.rename('old.txt', 'new.txt')
+os.remove('file.txt')
+os.path.exists('file.txt')
+os.path.getsize('file.txt')
 
-### Dictionary Operations
-\`\`\`python
-# Merging dictionaries
-dict1 = {"a": 1, "b": 2}
-dict2 = {"c": 3, "d": 4}
-merged = {**dict1, **dict2}  # Python 3.5+
-
-# Dictionary methods
-items = person.items()        # Get key-value pairs
-person.clear()               # Remove all items
-person.copy()                # Create a copy
+# Path operations
+path = os.path.join('folder', 'subfolder', 'file.txt')
+dirname = os.path.dirname(path)
+basename = os.path.basename(path)
 \`\`\`
 
 ## Best Practices
-1. Use appropriate data structures for your needs
-2. Consider performance implications of operations
-3. Use list/dict comprehensions for cleaner code
-4. Handle missing keys safely in dictionaries
-5. Use meaningful key names
-6. Consider using collections module for specialized containers
+1. Always use \`with\` statement for file operations
+2. Handle file exceptions properly
+3. Close files explicitly if not using \`with\`
+4. Use appropriate file modes
+5. Handle encoding issues
+6. Use context managers for resource management
+7. Back up important files before operations
 `
       },
-      oop: {
-        title: "Intro to OOP",
+      exceptions: {
+        title: "Error Handling",
         content: `
-# Object-Oriented Programming in Python
+# Error Handling in Python
 
-## Classes and Objects
-Classes are blueprints for creating objects:
-
+## Basic Try-Except
 \`\`\`python
-# Basic class definition
-class Person:
-    def __init__(self, name, age):
-        self.name = name
+# Basic error handling
+try:
+    number = int(input("Enter a number: "))
+    result = 100 / number
+    print(f"100 divided by {number} is {result}")
+except ValueError:
+    print("Please enter a valid number")
+except ZeroDivisionError:
+    print("Cannot divide by zero")
+except Exception as e:
+    print(f"An error occurred: {e}")
+\`\`\`
+
+## Try-Except-Else-Finally
+\`\`\`python
+try:
+    file = open('data.txt', 'r')
+    content = file.read()
+except FileNotFoundError:
+    print("File not found")
+else:
+    print("File read successfully")
+    print(content)
+finally:
+    file.close()
+    print("File closed")
+\`\`\`
+
+## Custom Exceptions
+\`\`\`python
+class AgeError(Exception):
+    def __init__(self, age):
         self.age = age
-    
-    def greet(self):
-        return f"Hello, my name is {self.name}"
+        self.message = f"Age {age} is not valid"
+        super().__init__(self.message)
 
-# Creating objects
-person1 = Person("John", 30)
-person2 = Person("Alice", 25)
+def verify_age(age):
+    if age < 0:
+        raise AgeError(age)
+    if age > 150:
+        raise AgeError(age)
+    return True
 
-# Accessing attributes and methods
-print(person1.name)      # Access attribute
-print(person1.greet())   # Call method
+try:
+    verify_age(-5)
+except AgeError as e:
+    print(f"Error: {e.message}")
 \`\`\`
 
-## Inheritance
-Classes can inherit from other classes:
-
+## Exception Hierarchy
 \`\`\`python
-class Employee(Person):
-    def __init__(self, name, age, employee_id):
-        super().__init__(name, age)
-        self.employee_id = employee_id
-    
-    def work(self):
-        return f"{self.name} is working"
-
-# Using inheritance
-employee = Employee("Bob", 35, "E123")
-print(employee.greet())  # Inherited method
-print(employee.work())   # New method
+try:
+    # Some code that might raise an exception
+    result = 10 / 0
+except ArithmeticError as e:
+    print("Arithmetic error occurred")
+except Exception as e:
+    print("Some other error occurred")
 \`\`\`
 
-## Encapsulation
-Using access modifiers to control attribute access:
-
+## Context Managers
 \`\`\`python
-class BankAccount:
-    def __init__(self, owner, balance):
-        self._owner = owner      # Protected attribute
-        self.__balance = balance  # Private attribute
-    
-    def deposit(self, amount):
-        if amount > 0:
-            self.__balance += amount
-            return True
-        return False
-    
-    def get_balance(self):
-        return self.__balance
+class DatabaseConnection:
+    def __init__(self, db_name):
+        self.db_name = db_name
 
-# Using encapsulation
-account = BankAccount("John", 1000)
-account.deposit(500)
-print(account.get_balance())  # 1500
+    def __enter__(self):
+        print(f"Connecting to {self.db_name}")
+        await asyncio.sleep(1)
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        print(f"Closing connection to {self.db_name}")
+        if exc_type is not None:
+            print(f"An error occurred: {exc_val}")
+        return False  # Re-raise the exception
+
+# Using the context manager
+with DatabaseConnection("mydb") as db:
+    print("Performing database operations")
+    # raise Exception("Database error")
 \`\`\`
 
-## Polymorphism
-Different classes can implement the same method differently:
-
+## Assertions
 \`\`\`python
-class Animal:
-    def make_sound(self):
-        pass
+def calculate_square_root(number):
+    assert number >= 0, "Cannot calculate square root of negative number"
+    return number ** 0.5
 
-class Dog(Animal):
-    def make_sound(self):
-        return "Woof!"
-
-class Cat(Animal):
-    def make_sound(self):
-        return "Meow!"
-
-# Using polymorphism
-animals = [Dog(), Cat()]
-for animal in animals:
-    print(animal.make_sound())
+try:
+    result = calculate_square_root(-4)
+except AssertionError as e:
+    print(f"Assertion error: {e}")
 \`\`\`
 
-## Class Methods and Static Methods
+## Logging
+\`\`\`python
+import logging
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    filename='app.log'
+)
+
+try:
+    result = 10 / 0
+except Exception as e:
+    logging.error(f"An error occurred: {e}", exc_info=True)
+\`\`\`
+
+## Best Practices
+1. Catch specific exceptions rather than using bare except
+2. Use finally for cleanup operations
+3. Create custom exceptions for your application
+4. Use context managers for resource management
+5. Log exceptions with appropriate detail
+6. Don't catch exceptions you can't handle
+7. Use assertions for debugging
+8. Document expected exceptions
+`
+      },
+      modules: {
+        title: "Modules & Packages",
+        content: `
+# Modules and Packages in Python
+
+## Creating Modules
+Create a file named \`math_utils.py\`:
+\`\`\`python
+# math_utils.py
+def add(a, b):
+    return a + b
+
+def subtract(a, b):
+    return a - b
+
+PI = 3.14159
+
+class Circle:
+    def __init__(self, radius):
+        self.radius = radius
+    
+    def area(self):
+        return PI * self.radius ** 2
+\`\`\`
+
+## Importing Modules
+\`\`\`python
+# Import entire module
+import math_utils
+result = math_utils.add(5, 3)
+
+# Import specific items
+from math_utils import add, subtract
+result = add(5, 3)
+
+# Import with alias
+import math_utils as mu
+result = mu.add(5, 3)
+
+# Import all items (not recommended)
+from math_utils import *
+result = add(5, 3)
+\`\`\`
+
+## Creating Packages
+Directory structure:
+\`\`\`
+my_package/
+    __init__.py
+    module1.py
+    module2.py
+    subpackage/
+        __init__.py
+        module3.py
+\`\`\`
 
 \`\`\`python
-class MathOperations:
+# __init__.py
+from .module1 import function1
+from .module2 import function2
+
+__all__ = ['function1', 'function2']
+
+# module1.py
+def function1():
+    return "Function 1"
+
+# module2.py
+def function2():
+    return "Function 2"
+\`\`\`
+
+## Using Packages
+\`\`\`python
+# Import from package
+from my_package import function1
+result = function1()
+
+# Import from subpackage
+from my_package.subpackage import module3
+result = module3.function3()
+\`\`\`
+
+## Built-in Modules
+\`\`\`python
+# datetime
+from datetime import datetime, timedelta
+now = datetime.now()
+tomorrow = now + timedelta(days=1)
+
+# random
+import random
+number = random.randint(1, 10)
+choice = random.choice(['apple', 'banana', 'cherry'])
+
+# json
+import json
+data = {'name': 'John', 'age': 30}
+json_str = json.dumps(data)
+parsed = json.loads(json_str)
+
+# os
+import os
+current_dir = os.getcwd()
+files = os.listdir(current_dir)
+\`\`\`
+
+## Virtual Environments
+\`\`\`bash
+# Create virtual environment
+python -m venv myenv
+
+# Activate virtual environment
+# Windows
+myenv\\Scripts\\activate
+# Unix/MacOS
+source myenv/bin/activate
+
+# Install packages
+pip install package_name
+
+# Create requirements.txt
+pip freeze > requirements.txt
+
+# Install from requirements.txt
+pip install -r requirements.txt
+\`\`\`
+
+## Best Practices
+1. Use meaningful module and package names
+2. Create \`__init__.py\` files for packages
+3. Use relative imports within packages
+4. Don't use wildcard imports
+5. Use virtual environments
+6. Document your modules and packages
+7. Follow PEP 8 style guide
+8. Use \`__all__\` to specify public API
+`
+      },
+      decorators: {
+        title: "Decorators & Generators",
+        content: `
+# Decorators and Generators in Python
+
+## Function Decorators
+\`\`\`python
+# Basic decorator
+def timer(func):
+    def wrapper(*args, **kwargs):
+        import time
+        start = time.time()
+        result = func(*args, **kwargs)
+        end = time.time()
+        print(f"{func.__name__} took {end - start} seconds")
+        return result
+    return wrapper
+
+@timer
+def slow_function():
+    import time
+    time.sleep(1)
+    return "Done!"
+
+# Decorator with parameters
+def repeat(times):
+    def decorator(func):
+        def wrapper(*args, **kwargs):
+            for _ in range(times):
+                result = func(*args, **kwargs)
+            return result
+        return wrapper
+    return decorator
+
+@repeat(times=3)
+def greet(name):
+    print(f"Hello, {name}!")
+\`\`\`
+
+## Class Decorators
+\`\`\`python
+# Class decorator
+def singleton(cls):
+    instances = {}
+    def get_instance(*args, **kwargs):
+        if cls not in instances:
+            instances[cls] = cls(*args, **kwargs)
+        return instances[cls]
+    return get_instance
+
+@singleton
+class Database:
+    def __init__(self):
+        print("Initializing database...")
+
+# Using the singleton
+db1 = Database()
+db2 = Database()  # Returns the same instance
+\`\`\`
+
+## Method Decorators
+\`\`\`python
+class Calculator:
     @staticmethod
     def add(x, y):
         return x + y
-    
+
     @classmethod
     def create_from_string(cls, string):
         x, y = map(int, string.split(','))
         return cls(x, y)
 
-# Using static and class methods
-result = MathOperations.add(5, 3)
-obj = MathOperations.create_from_string("5,3")
+    @property
+    def value(self):
+        return self._value
+
+    @value.setter
+    def value(self, new_value):
+        if new_value < 0:
+            raise ValueError("Value cannot be negative")
+        self._value = new_value
+\`\`\`
+
+## Generators
+\`\`\`python
+# Generator function
+def count_up_to(n):
+    i = 0
+    while i <= n:
+        yield i
+        i += 1
+
+# Using generator
+for num in count_up_to(5):
+    print(num)
+
+# Generator expression
+squares = (x**2 for x in range(10))
+print(list(squares))
+
+# Generator with send
+def counter():
+    i = 0
+    while True:
+        val = yield i
+        if val is not None:
+            i = val
+        else:
+            i += 1
+
+c = counter()
+print(next(c))  # 0
+print(c.send(10))  # 10
+print(next(c))  # 11
+\`\`\`
+
+## Context Managers
+\`\`\`python
+from contextlib import contextmanager
+
+@contextmanager
+def timer():
+    import time
+    start = time.time()
+    yield
+    end = time.time()
+    print(f"Operation took {end - start} seconds")
+
+# Using context manager
+with timer():
+    import time
+    time.sleep(1)
 \`\`\`
 
 ## Best Practices
-1. Use meaningful class and method names
-2. Follow the Single Responsibility Principle
-3. Use inheritance appropriately
-4. Implement proper encapsulation
-5. Document classes and methods
-6. Use type hints for better code documentation
-7. Consider using dataclasses for simple data containers
+1. Use decorators for cross-cutting concerns
+2. Keep decorators simple and focused
+3. Use functools.wraps to preserve metadata
+4. Use generators for memory efficiency
+5. Document decorator behavior
+6. Use appropriate decorator types
+7. Consider performance implications
+`
+      },
+      async: {
+        title: "Async Programming",
+        content: `
+# Asynchronous Programming in Python
+
+## Basic Async/Await
+\`\`\`python
+import asyncio
+
+async def hello():
+    print("Hello")
+    await asyncio.sleep(1)
+    print("World")
+
+async def main():
+    await hello()
+    print("Done!")
+
+# Run the async program
+asyncio.run(main())
+\`\`\`
+
+## Multiple Coroutines
+\`\`\`python
+import asyncio
+
+async def task1():
+    print("Task 1 started")
+    await asyncio.sleep(2)
+    print("Task 1 completed")
+
+async def task2():
+    print("Task 2 started")
+    await asyncio.sleep(1)
+    print("Task 2 completed")
+
+async def main():
+    # Run tasks concurrently
+    await asyncio.gather(task1(), task2())
+    print("All tasks completed")
+
+asyncio.run(main())
+\`\`\`
+
+## Async Context Managers
+\`\`\`python
+class AsyncResource:
+    async def __aenter__(self):
+        print("Acquiring resource")
+        await asyncio.sleep(1)
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        print("Releasing resource")
+        await asyncio.sleep(1)
+
+async def use_resource():
+    async with AsyncResource() as resource:
+        print("Using resource")
+        await asyncio.sleep(1)
+
+asyncio.run(use_resource())
+\`\`\`
+
+## Async Iterators
+\`\`\`python
+class AsyncCounter:
+    def __init__(self, limit):
+        self.limit = limit
+        self.current = 0
+
+    def __aiter__(self):
+        return self
+
+    async def __anext__(self):
+        if self.current >= self.limit:
+            raise StopAsyncIteration
+        self.current += 1
+        await asyncio.sleep(0.1)
+        return self.current
+
+async def count():
+    async for number in AsyncCounter(5):
+        print(number)
+
+asyncio.run(count())
+\`\`\`
+
+## Async HTTP Requests
+\`\`\`python
+import aiohttp
+import asyncio
+
+async def fetch_url(session, url):
+    async with session.get(url) as response:
+        return await response.text()
+
+async def main():
+    urls = [
+        'http://example.com',
+        'http://example.org',
+        'http://example.net'
+    ]
+    
+    async with aiohttp.ClientSession() as session:
+        tasks = [fetch_url(session, url) for url in urls]
+        responses = await asyncio.gather(*tasks)
+        for url, response in zip(urls, responses):
+            print(f"{url}: {len(response)} bytes")
+
+asyncio.run(main())
+\`\`\`
+
+## Error Handling
+\`\`\`python
+async def risky_operation():
+    try:
+        await asyncio.sleep(1)
+        raise ValueError("Something went wrong")
+    except ValueError as e:
+        print(f"Caught error: {e}")
+        return None
+
+async def main():
+    result = await risky_operation()
+    if result is None:
+        print("Operation failed")
+
+asyncio.run(main())
+\`\`\`
+
+## Best Practices
+1. Use async/await for I/O-bound operations
+2. Avoid blocking operations in async code
+3. Use asyncio.gather for concurrent tasks
+4. Handle exceptions properly
+5. Use async context managers
+6. Consider using async libraries
+7. Profile async code for performance
+8. Document async behavior
+`
+      },
+      testing: {
+        title: "Testing & Debugging",
+        content: `
+# Testing and Debugging in Python
+
+## Unit Testing with unittest
+\`\`\`python
+import unittest
+
+class Calculator:
+    def add(self, x, y):
+        return x + y
+
+    def subtract(self, x, y):
+        return x - y
+
+class TestCalculator(unittest.TestCase):
+    def setUp(self):
+        self.calc = Calculator()
+
+    def test_add(self):
+        self.assertEqual(self.calc.add(3, 5), 8)
+        self.assertEqual(self.calc.add(-1, 1), 0)
+
+    def test_subtract(self):
+        self.assertEqual(self.calc.subtract(5, 3), 2)
+        self.assertEqual(self.calc.subtract(1, 1), 0)
+
+if __name__ == '__main__':
+    unittest.main()
+\`\`\`
+
+## Testing with pytest
+\`\`\`python
+# test_calculator.py
+import pytest
+from calculator import Calculator
+
+@pytest.fixture
+def calculator():
+    return Calculator()
+
+def test_add(calculator):
+    assert calculator.add(3, 5) == 8
+    assert calculator.add(-1, 1) == 0
+
+def test_subtract(calculator):
+    assert calculator.subtract(5, 3) == 2
+    assert calculator.subtract(1, 1) == 0
+
+# Run with: pytest test_calculator.py
+\`\`\`
+
+## Debugging with pdb
+\`\`\`python
+import pdb
+
+def complex_function(x):
+    result = 0
+    for i in range(x):
+        result += i
+        pdb.set_trace()  # Breakpoint
+    return result
+
+# pdb commands:
+# n (next line)
+# s (step into)
+# c (continue)
+# p variable (print variable)
+# l (list source)
+# q (quit)
+\`\`\`
+
+## Logging
+\`\`\`python
+import logging
+
+# Configure logging
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    filename='app.log'
+)
+
+def process_data(data):
+    logging.info("Starting data processing")
+    try:
+        result = data * 2
+        logging.debug(f"Processed data: {result}")
+        return result
+    except Exception as e:
+        logging.error(f"Error processing data: {e}", exc_info=True)
+        raise
+\`\`\`
+
+## Assertions
+\`\`\`python
+def calculate_square_root(number):
+    assert number >= 0, "Cannot calculate square root of negative number"
+    return number ** 0.5
+
+# Run with -O flag to disable assertions
+# python -O script.py
+\`\`\`
+
+## Test Coverage
+\`\`\`python
+# Install coverage: pip install coverage
+
+# Run tests with coverage
+# coverage run -m pytest test_calculator.py
+
+# Generate coverage report
+# coverage report
+# coverage html  # Creates HTML report
+\`\`\`
+
+## Best Practices
+1. Write tests before code (TDD)
+2. Use meaningful test names
+3. Test edge cases
+4. Use fixtures for setup
+5. Keep tests independent
+6. Use appropriate assertions
+7. Document test cases
+8. Maintain test coverage
+`
+      },
+      databases: {
+        title: "Database Operations",
+        content: `
+# Database Operations in Python
+
+## SQLite
+\`\`\`python
+import sqlite3
+
+# Connecting to database
+conn = sqlite3.connect('database.db')
+cursor = conn.cursor()
+
+# Creating tables
+cursor.execute('''
+    CREATE TABLE users (
+        id INTEGER PRIMARY KEY,
+        name TEXT NOT NULL,
+        email TEXT UNIQUE
+    )
+''')
+
+# Inserting data
+cursor.execute('''
+    INSERT INTO users (name, email)
+    VALUES (?, ?)
+''', ('John Doe', 'john@example.com'))
+
+# Querying data
+cursor.execute('SELECT * FROM users')
+users = cursor.fetchall()
+
+# Updating data
+cursor.execute('''
+    UPDATE users
+    SET name = ?
+    WHERE email = ?
+''', ('Jane Doe', 'john@example.com'))
+
+# Deleting data
+cursor.execute('DELETE FROM users WHERE email = ?', ('john@example.com',))
+
+# Committing changes
+conn.commit()
+
+# Closing connection
+conn.close()
+\`\`\`
+
+## PostgreSQL with psycopg2
+\`\`\`python
+import psycopg2
+
+# Connecting to database
+conn = psycopg2.connect(
+    dbname="mydb",
+    user="user",
+    password="password",
+    host="localhost"
+)
+cursor = conn.cursor()
+
+# Creating tables
+cursor.execute('''
+    CREATE TABLE products (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(100),
+        price DECIMAL(10,2)
+    )
+''')
+
+# Inserting data
+cursor.execute('''
+    INSERT INTO products (name, price)
+    VALUES (%s, %s)
+''', ('Laptop', 999.99))
+
+# Querying data
+cursor.execute('SELECT * FROM products')
+products = cursor.fetchall()
+
+# Closing connection
+conn.close()
+\`\`\`
+
+## SQLAlchemy ORM
+\`\`\`python
+from sqlalchemy import create_engine, Column, Integer, String
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
+
+# Create engine
+engine = create_engine('sqlite:///database.db')
+Base = declarative_base()
+
+# Define model
+class User(Base):
+    __tablename__ = 'users'
+    
+    id = Column(Integer, primary_key=True)
+    name = Column(String(100))
+    email = Column(String(100), unique=True)
+
+# Create tables
+Base.metadata.create_all(engine)
+
+# Create session
+Session = sessionmaker(bind=engine)
+session = Session()
+
+# Insert data
+user = User(name='John Doe', email='john@example.com')
+session.add(user)
+session.commit()
+
+# Query data
+users = session.query(User).all()
+user = session.query(User).filter_by(email='john@example.com').first()
+
+# Update data
+user.name = 'Jane Doe'
+session.commit()
+
+# Delete data
+session.delete(user)
+session.commit()
+\`\`\`
+
+## MongoDB with pymongo
+\`\`\`python
+from pymongo import MongoClient
+
+# Connecting to MongoDB
+client = MongoClient('mongodb://localhost:27017/')
+db = client['mydb']
+collection = db['users']
+
+# Inserting documents
+user = {
+    'name': 'John Doe',
+    'email': 'john@example.com',
+    'age': 30
+}
+collection.insert_one(user)
+
+# Querying documents
+users = collection.find({'age': {'$gt': 25}})
+for user in users:
+    print(user)
+
+# Updating documents
+collection.update_one(
+    {'email': 'john@example.com'},
+    {'$set': {'name': 'Jane Doe'}}
+)
+
+# Deleting documents
+collection.delete_one({'email': 'john@example.com'})
+\`\`\`
+
+## Best Practices
+1. Use connection pooling
+2. Handle database errors
+3. Use parameterized queries
+4. Close connections properly
+5. Use transactions when needed
+6. Index important fields
+7. Regular backups
+8. Use ORM for complex applications
+`
+      },
+      web: {
+        title: "Web Development",
+        content: `
+# Web Development with Python
+
+## Flask Basics
+\`\`\`python
+from flask import Flask, request, jsonify
+
+app = Flask(__name__)
+
+@app.route('/')
+def home():
+    return 'Hello, World!'
+
+@app.route('/api/users', methods=['GET'])
+def get_users():
+    users = [
+        {'id': 1, 'name': 'John'},
+        {'id': 2, 'name': 'Jane'}
+    ]
+    return jsonify(users)
+
+@app.route('/api/users', methods=['POST'])
+def create_user():
+    data = request.get_json()
+    # Process user data
+    return jsonify({'message': 'User created'}), 201
+
+if __name__ == '__main__':
+    app.run(debug=True)
+\`\`\`
+
+## Flask Templates
+\`\`\`python
+from flask import Flask, render_template
+
+app = Flask(__name__)
+
+@app.route('/')
+def home():
+    return render_template('index.html', title='Home')
+
+@app.route('/user/<username>')
+def user_profile(username):
+    return render_template('profile.html', username=username)
+\`\`\`
+
+## Flask Forms
+\`\`\`python
+from flask import Flask, render_template, request
+from flask_wtf import FlaskForm
+from wtforms import StringField, SubmitField
+from wtforms.validators import DataRequired
+
+app = Flask(__name__)
+app.config['SECRET_KEY'] = 'your-secret-key'
+
+class LoginForm(FlaskForm):
+    username = StringField('Username', validators=[DataRequired()])
+    password = StringField('Password', validators=[DataRequired()])
+    submit = SubmitField('Login')
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    form = LoginForm()
+    if form.validate_on_submit():
+        # Process login
+        return 'Logged in successfully'
+    return render_template('login.html', form=form)
+\`\`\`
+
+## Django Basics
+\`\`\`python
+# settings.py
+INSTALLED_APPS = [
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    'myapp',
+]
+
+# models.py
+from django.db import models
+
+class User(models.Model):
+    name = models.CharField(max_length=100)
+    email = models.EmailField(unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+# views.py
+from django.shortcuts import render
+from .models import User
+
+def user_list(request):
+    users = User.objects.all()
+    return render(request, 'users.html', {'users': users})
+\`\`\`
+
+## FastAPI
+\`\`\`python
+from fastapi import FastAPI
+from pydantic import BaseModel
+
+app = FastAPI()
+
+class User(BaseModel):
+    name: str
+    email: str
+
+@app.get("/")
+def read_root():
+    return {"Hello": "World"}
+
+@app.post("/users/")
+def create_user(user: User):
+    return user
+
+@app.get("/users/{user_id}")
+def read_user(user_id: int):
+    return {"user_id": user_id}
+\`\`\`
+
+## REST API Best Practices
+1. Use appropriate HTTP methods
+2. Return proper status codes
+3. Version your APIs
+4. Use authentication
+5. Validate input data
+6. Handle errors gracefully
+7. Document your API
+8. Use rate limiting
+
+## Security Best Practices
+1. Use HTTPS
+2. Implement authentication
+3. Validate user input
+4. Use CSRF protection
+5. Set secure headers
+6. Use parameterized queries
+7. Regular security updates
+8. Implement rate limiting
+`
+      },
+      data_science: {
+        title: "Data Science Basics",
+        content: `
+# Data Science with Python
+
+## NumPy Basics
+\`\`\`python
+import numpy as np
+
+# Creating arrays
+arr1 = np.array([1, 2, 3, 4, 5])
+arr2 = np.zeros((3, 3))  # 3x3 array of zeros
+arr3 = np.ones((2, 2))   # 2x2 array of ones
+arr4 = np.arange(0, 10, 2)  # [0, 2, 4, 6, 8]
+
+# Array operations
+arr5 = arr1 * 2  # Element-wise multiplication
+arr6 = np.dot(arr1, arr1)  # Dot product
+arr7 = arr1.reshape(5, 1)  # Reshape array
+
+# Statistical operations
+mean = np.mean(arr1)
+std = np.std(arr1)
+max_val = np.max(arr1)
+min_val = np.min(arr1)
+\`\`\`
+
+## Pandas Basics
+\`\`\`python
+import pandas as pd
+
+# Creating DataFrame
+data = {
+    'name': ['John', 'Jane', 'Bob'],
+    'age': [25, 30, 35],
+    'city': ['New York', 'London', 'Paris']
+}
+df = pd.DataFrame(data)
+
+# Reading data
+df = pd.read_csv('data.csv')
+df = pd.read_excel('data.xlsx')
+
+# Data manipulation
+df['salary'] = df['age'] * 1000  # Add new column
+df.drop('city', axis=1)  # Remove column
+df.sort_values('age')  # Sort by column
+
+# Data analysis
+df.describe()  # Statistical summary
+df.groupby('city').mean()  # Group by column
+df.corr()  # Correlation matrix
+\`\`\`
+
+## Matplotlib
+\`\`\`python
+import matplotlib.pyplot as plt
+
+# Line plot
+x = [1, 2, 3, 4, 5]
+y = [2, 4, 6, 8, 10]
+plt.plot(x, y)
+plt.title('Simple Line Plot')
+plt.xlabel('X axis')
+plt.ylabel('Y axis')
+plt.show()
+
+# Scatter plot
+plt.scatter(x, y)
+plt.show()
+
+# Bar plot
+plt.bar(x, y)
+plt.show()
+
+# Histogram
+data = np.random.randn(1000)
+plt.hist(data, bins=30)
+plt.show()
+\`\`\`
+
+## Scikit-learn
+\`\`\`python
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error
+
+# Prepare data
+X = np.array([[1], [2], [3], [4], [5]])
+y = np.array([2, 4, 6, 8, 10])
+
+# Split data
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)
+
+# Train model
+model = LinearRegression()
+model.fit(X_train, y_train)
+
+# Make predictions
+y_pred = model.predict(X_test)
+
+# Evaluate model
+mse = mean_squared_error(y_test, y_pred)
+print(f"Mean Squared Error: {mse}")
+\`\`\`
+
+## Data Preprocessing
+\`\`\`python
+from sklearn.preprocessing import StandardScaler, LabelEncoder
+
+# Scaling numerical features
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+
+# Encoding categorical features
+le = LabelEncoder()
+y_encoded = le.fit_transform(y)
+
+# Handling missing values
+df.fillna(df.mean())  # Fill with mean
+df.dropna()  # Remove rows with missing values
+\`\`\`
+
+## Best Practices
+1. Clean and preprocess data
+2. Split data into train/test sets
+3. Scale features appropriately
+4. Handle missing values
+5. Use cross-validation
+6. Evaluate multiple models
+7. Tune hyperparameters
+8. Document your analysis
 `
       }
     };
