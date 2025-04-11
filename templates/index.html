@@ -12,14 +12,18 @@
       position: relative;
       padding-left: 3.5em;
       counter-reset: linenumber;
-      word-wrap: break-word; /* Ensures the text wraps within the box */
-      white-space: pre-wrap; /* Ensure the lines break within the container */
-      max-width: 100%; /* Prevent overflow */
+      word-wrap: break-word;
+      white-space: pre-wrap;
+      max-width: 100%;
+      overflow-x: hidden;
+      word-break: break-word;
     }
+
     pre[class*="language-"] code {
       display: block;
       counter-increment: linenumber;
     }
+
     pre[class*="language-"] code::before {
       content: counter(linenumber);
       display: inline-block;
@@ -28,6 +32,14 @@
       padding-right: 0.5em;
       text-align: right;
       opacity: 0.3;
+    }
+
+    /* Adjust font size for better readability */
+    #response {
+      font-size: 14px;
+      word-wrap: break-word;
+      white-space: normal;
+      overflow-wrap: break-word;
     }
   </style>
 </head>
@@ -91,7 +103,6 @@
   <script src="https://cdn.jsdelivr.net/npm/prismjs/prism.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/prismjs/components/prism-python.min.js"></script>
   <script>
-    // Function to render code with line numbers
     function renderCodeBlock(code) {
       return Prism.highlight(code, Prism.languages.python, 'python')
         .split('\n')
@@ -99,7 +110,6 @@
         .join('\n');
     }
 
-    // Function to show selected lesson
     function showLesson(topic) {
       const lessons = {
         vars: "**Variables & Data Types**\n\n```python\nx = 10\nname = 'Joe'\nis_ready = True\n```",
@@ -114,7 +124,6 @@
       lessonContent.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
-    // Ask GPT function
     async function askGPT() {
       const prompt = document.getElementById('prompt').value;
       const res = await fetch('/api/gpt-python', {
@@ -128,7 +137,6 @@
       document.getElementById('nextBtn').classList.add('hidden');
     }
 
-    // Start lesson function
     async function startLesson() {
       let score = parseInt(localStorage.getItem('score')) || 0;
       let attempts = parseInt(localStorage.getItem('attempts')) || 0;
