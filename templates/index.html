@@ -26,6 +26,13 @@
       text-align: right;
       opacity: 0.3;
     }
+
+    /* Added this to ensure the GPT question text does not overflow */
+    .response-text {
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      max-width: 100%;
+    }
   </style>
 </head>
 <body class="bg-black text-white font-sans min-h-screen flex items-start justify-center">
@@ -59,16 +66,19 @@
         <button id="startLessonBtn" type="button" class="w-full bg-green-600 hover:bg-green-700 text-white py-3 px-4 rounded text-lg font-semibold">
           Teach Me Python
         </button>
+
         <details class="w-full">
           <summary class="cursor-pointer bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded text-lg font-semibold text-center" onclick="event.stopPropagation()">Ask GPT a Question</summary>
           <div class="mt-3 space-y-2">
             <textarea id="prompt" placeholder="Ask a Python question..." class="w-full p-4 rounded bg-gray-800 text-white border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm" rows="4"></textarea>
-            <button id="askGPTBtn" type="button" class="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded" onclick="askGPT()">Ask</button>
+            <button id="askGPTBtn" type="button" class="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded">Ask</button>
           </div>
         </details>
       </div>
 
-      <pre class="whitespace-pre-wrap bg-gray-800 text-sm p-4 rounded border border-gray-700 font-mono min-h-[120px] transition-all duration-300 ease-in-out overflow-x-auto"><code id="response" class="language-python"></code></pre>
+      <pre class="whitespace-pre-wrap bg-gray-800 text-sm p-4 rounded border border-gray-700 font-mono min-h-[120px] transition-all duration-300 ease-in-out overflow-x-auto">
+        <code id="response" class="language-python response-text"></code>
+      </pre>
 
       <div id="choices" class="space-y-2 hidden">
         <button class="choice-btn w-full py-2 rounded bg-gray-700 hover:bg-gray-600"></button>
@@ -97,36 +107,57 @@
 
     async function askGPT() {
       const prompt = document.getElementById('prompt').value;
-
-      if (!prompt.trim()) {
-        alert("Please enter a question.");
-        return;
-      }
-
       const res = await fetch('/api/gpt-python', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt })
       });
-
       const data = await res.json();
-      const question = data.response.question;
-      const options = data.response.options;
-      const answer = data.response.answer;
-
-      const formattedQuestion = renderCodeBlock(question);
-      const formattedAnswer = renderCodeBlock(`Answer: ${answer}`);
-      const formattedOptions = options.map(option => renderCodeBlock(option)).join('<br>');
-
-      document.getElementById('response').innerHTML = `
-        <div>${formattedQuestion}</div><br>
-        <div><b>Options:</b><br>${formattedOptions}</div><br>
-        <div><b>Correct Answer:</b><br>${formattedAnswer}</div>
-      `;
-
+      const formattedResponse = data.response.replace(/\n/g, "<br>");
+      document.getElementById('response').innerHTML = formattedResponse;
       document.getElementById('choices').classList.add('hidden');
       document.getElementById('nextBtn').classList.add('hidden');
     }
+
+    async function startLesson() {
+      const difficulty = document.getElementById('difficulty').value;
+      const promptText = `You are a Python tutor. Generate a multiple choice question that includes real Python code that must be evaluated. Return ONLY raw JSON in this format: {"question": "...", "options": ["A. ...", "B. ...", "C. ...", "D. ..."], "answer": "..."} (Difficulty: ${difficulty.toUpperCase()})`;
+
+      const res = await fetch("/api/gpt-python", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt: promptText })
+      });
+      const data = await res.json();
+
+      try {
+        const parsed = JSON.parse(data.response);
+        document.getElementById('response').innerHTML = renderCodeBlock(parsed.question);
+        const correctAnswer = parsed.answer;
+        const buttons = document.getElementsByClassName('choice-btn');
+        Array.from(buttons).forEach((btn, i) => {
+          btn.textContent = parsed.options[i];
+          btn.disabled = false;
+          btn.onclick = () => {
+            if (btn.textContent === correctAnswer) {
+              document.getElementById('response').innerHTML = renderCodeBlock("✅ Correct!\n\n" + parsed.question);
+              document.getElementById('nextBtn').classList.remove('hidden');
+            } else {
+              document.getElementById('response').innerHTML = renderCodeBlock("❌ Incorrect. Try again.\n\n" + parsed.question);
+            }
+          };
+        });
+        document.getElementById('choices').classList.remove('hidden');
+      } catch (e) {
+        document.getElementById('response').textContent = "⚠️ Could not parse GPT response as JSON.";
+        document.getElementById('choices').classList.add('hidden');
+      }
+    }
+
+    window.addEventListener("load", () => {
+      document.getElementById('startLessonBtn').addEventListener('click', startLesson);
+      document.getElementById('askGPTBtn').addEventListener('click', askGPT);
+    });
   </script>
 </body>
 </html>
