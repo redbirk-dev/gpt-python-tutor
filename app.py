@@ -19,20 +19,32 @@ def index():
 @app.route('/api/gpt-python', methods=['POST'])
 def ask_gpt():
     data = request.get_json()
-    prompt = (
-        "You are a Python tutor. Generate an intermediate to advanced multiple-choice question "
-        "that includes a working Python code snippet, and has only one correct answer. "
-        "Make sure the question is valid, the code runs, and the correct answer is accurate. "
-        "Respond ONLY with raw JSON in this format:\n\n"
-        "{"
-        "\"question\": \"<Insert question that includes the code>\", "
-        "\"options\": [\"A. ...\", \"B. ...\", \"C. ...\", \"D. ...\"], "
-        "\"answer\": \"A. ...\""
-        "}\n\n"
-        "DO NOT explain or include anything else — just JSON with the code question and options. "
-        "The code should be Python 3 and focus on logic, scope, functions, or expressions. "
-        "Avoid trick questions or ambiguous output. Double-check your answer."
-    )
+    prompt = data.get('prompt', '')
+    
+    # If it's a quiz-style prompt, use the existing format
+    if "Generate a multiple choice question" in prompt:
+        prompt = (
+            "You are a Python tutor. Generate an intermediate to advanced multiple-choice question "
+            "that includes a working Python code snippet, and has only one correct answer. "
+            "Make sure the question is valid, the code runs, and the correct answer is accurate. "
+            "Respond ONLY with raw JSON in this format:\n\n"
+            "{"
+            "\"question\": \"<Insert question that includes the code>\", "
+            "\"options\": [\"A. ...\", \"B. ...\", \"C. ...\", \"D. ...\"], "
+            "\"answer\": \"A. ...\""
+            "}\n\n"
+            "DO NOT explain or include anything else — just JSON with the code question and options. "
+            "The code should be Python 3 and focus on logic, scope, functions, or expressions. "
+            "Avoid trick questions or ambiguous output. Double-check your answer."
+        )
+    else:
+        # For general questions, use a different prompt
+        prompt = (
+            "You are a Python tutor. Answer the following question with clear explanations and code examples where appropriate. "
+            "Format your response using markdown for code blocks and explanations. "
+            "Make sure any code examples are valid Python 3 code that can be executed. "
+            f"Question: {prompt}"
+        )
 
     # Call OpenAI API
     response = openai.ChatCompletion.create(
@@ -49,7 +61,7 @@ def ask_gpt():
     if not "options" in content or not "answer" in content:
         return jsonify({'response': content})
 
-    # Try to parse as JSON
+    # Try to parse as JSON for quiz questions
     try:
         question_data = json.loads(content)
         question_text = question_data["question"]

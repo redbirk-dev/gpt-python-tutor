@@ -77,6 +77,8 @@
         <button class="choice-btn w-full py-2 rounded bg-gray-700 hover:bg-gray-600"></button>
       </div>
 
+      <div id="correctAnswer" class="hidden"></div>
+
       <button id="nextBtn" class="hidden w-full bg-purple-600 hover:bg-purple-700 text-white py-3 px-4 rounded text-lg font-semibold">
         Next Question
       </button>
@@ -129,6 +131,11 @@
 
     async function askGPT() {
       const prompt = document.getElementById('prompt').value;
+      if (!prompt.trim()) {
+        alert('Please enter a question first!');
+        return;
+      }
+
       const res = await fetch('/api/gpt-python', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -136,22 +143,40 @@
       });
 
       const data = await res.json();
+      const response = data.response;
 
-      const formattedData = formatQuestionResponse(data.response);
+      // Check if the response is a quiz question (JSON format)
+      try {
+        const parsedData = JSON.parse(response);
+        if (parsedData.question && parsedData.options && parsedData.answer) {
+          // Handle quiz question
+          const formattedData = formatQuestionResponse(response);
+          
+          // Render the formatted question and options in the page
+          const questionContainer = document.getElementById('response');
+          questionContainer.innerHTML = renderCodeBlock(formattedData.questionText);
 
-      // Render the formatted question and options in the page
-      const questionContainer = document.getElementById('response');
-      questionContainer.innerHTML = renderCodeBlock(formattedData.questionText);
+          const optionsContainer = document.getElementById('choices');
+          optionsContainer.innerHTML = formattedData.optionsHtml;
+          optionsContainer.classList.remove('hidden');
 
-      const optionsContainer = document.getElementById('choices');
-      optionsContainer.innerHTML = formattedData.optionsHtml;
-      optionsContainer.classList.remove('hidden');
+          // Store the correct answer for validation
+          const correctAnswerContainer = document.getElementById('correctAnswer');
+          correctAnswerContainer.textContent = formattedData.correctAnswer;
+          correctAnswerContainer.classList.remove('hidden');
 
-      // Store the correct answer for validation
-      const correctAnswerContainer = document.getElementById('correctAnswer');
-      correctAnswerContainer.textContent = formattedData.correctAnswer;
-
-      document.getElementById('nextBtn').classList.add('hidden');
+          document.getElementById('nextBtn').classList.add('hidden');
+        }
+      } catch (e) {
+        // Handle general question response
+        const responseContainer = document.getElementById('response');
+        responseContainer.innerHTML = renderCodeBlock(response);
+        
+        // Hide quiz-related elements
+        document.getElementById('choices').classList.add('hidden');
+        document.getElementById('correctAnswer').classList.add('hidden');
+        document.getElementById('nextBtn').classList.add('hidden');
+      }
     }
 
     async function startLesson() {
