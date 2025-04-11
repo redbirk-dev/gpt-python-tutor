@@ -51,12 +51,12 @@
 
       <div class="flex flex-col sm:flex-row gap-3 items-center">
         <select id="difficulty" class="bg-gray-800 border border-gray-700 text-white rounded px-4 py-3 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-green-500">
-  <option value="easy">🟢 Easy</option>
-  <option value="medium" selected>🟡 Medium</option>
-  <option value="hard">🔴 Hard</option>
-</select>
+          <option value="easy">🟢 Easy</option>
+          <option value="medium" selected>🟡 Medium</option>
+          <option value="hard">🔴 Hard</option>
+        </select>
 
-<button id="startLessonBtn" type="button" class="w-full bg-green-600 hover:bg-green-700 text-white py-3 px-4 rounded text-lg font-semibold">
+        <button id="startLessonBtn" type="button" class="w-full bg-green-600 hover:bg-green-700 text-white py-3 px-4 rounded text-lg font-semibold">
           Teach Me Python
         </button>
         <details class="w-full">
@@ -96,189 +96,95 @@
     }
 
     function showLesson(topic) {
-  const lessons = {
-    vars: "**Variables & Data Types**
+      const lessons = {
+        vars: "**Variables & Data Types**\n\n```python\nx = 10\nname = 'Rudra'\nis_ready = True\n```",
+        control: "**If, Else & Loops**\n\n```python\nif x > 5:\n    print('Big')\nelse:\n    print('Small')\n\nfor i in range(3):\n    print(i)\n```",
+        functions: "**Functions & Scope**\n\n```python\ndef greet(name):\n    return f\"Hello {name}\"\n\nprint(greet('Rudra'))\n```",
+        lists: "**Lists & Dictionaries**\n\n```python\nnums = [1, 2, 3]\ndata = {'name': 'Rudra', 'age': 17}\n```",
+        oop: "**Intro to OOP**\n\n```python\nclass Dog:\n    def __init__(self, name):\n        self.name = name\n\n    def bark(self):\n        print(self.name + ' says woof!')\n```"
+      };
+      const lessonContent = document.getElementById('lessonContent');
+      lessonContent.innerHTML = `<div class='whitespace-pre-wrap'>${marked.parse(lessons[topic])}</div>`;
+      lessonContent.classList.remove('hidden');
+      lessonContent.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
 
-Python variables store data. Example:
-```python
-x = 10
-name = 'Rudra'
-is_ready = True
-```
+    async function askGPT() {
+      const prompt = document.getElementById('prompt').value;
+      const res = await fetch('/api/gpt-python', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt })
+      });
+      const data = await res.json();
+      document.getElementById('response').innerHTML = renderCodeBlock(data.response);
+      document.getElementById('choices').classList.add('hidden');
+      document.getElementById('nextBtn').classList.add('hidden');
+    }
 
-Common data types: int, float, str, bool.",
-    control: "**If, Else & Loops**
-
-Conditional logic and repetition:
-```python
-if x > 5:
-    print('Big')
-else:
-    print('Small')
-
-for i in range(3):
-    print(i)
-```",
-    functions: "**Functions & Scope**
-
-Functions let you reuse logic:
-```python
-def greet(name):
-    return f\"Hello {name}\"
-
-print(greet('Rudra'))
-```",
-    lists: "**Lists & Dictionaries**
-
-Lists are ordered, dictionaries are key-value:
-```python
-nums = [1, 2, 3]
-data = {'name': 'Rudra', 'age': 17}
-```",
-    oop: "**Intro to OOP**
-
-OOP uses classes to model data:
-```python
-class Dog:
-    def __init__(self, name):
-        self.name = name
-
-    def bark(self):
-        print(self.name + ' says woof!')
-```"
-  };
-  const lessonContent = document.getElementById('lessonContent');
-  lessonContent.innerHTML = `<div class='whitespace-pre-wrap'>${marked.parse(lessons[topic])}</div>`;
-  lessonContent.classList.remove('hidden');
-  lessonContent.scrollIntoView({ behavior: 'smooth', block: 'start' });
-}
-
-window.addEventListener("load", () => {
-      document.getElementById('startLessonBtn').addEventListener('click', startLesson);
-      document.getElementById('askGPTBtn').addEventListener('click', askGPT);
+    async function startLesson() {
       let score = parseInt(localStorage.getItem('score')) || 0;
       let attempts = parseInt(localStorage.getItem('attempts')) || 0;
       let streak = parseInt(localStorage.getItem('streak')) || 0;
       let hasGuessedWrong = false;
-      const scoreEl = document.getElementById('score');
-      const attemptsEl = document.getElementById('attempts');
-      const streakEl = document.getElementById('streak');
       const responseEl = document.getElementById('response');
       const choicesEl = document.getElementById('choices');
       const nextBtn = document.getElementById('nextBtn');
-      const lessonContent = document.getElementById('lessonContent');
       const buttons = document.getElementsByClassName('choice-btn');
       let correctAnswer = '';
+      const difficulty = document.getElementById('difficulty').value;
 
-      function updateStats() {
-        scoreEl.textContent = score;
-        attemptsEl.textContent = attempts;
-        streakEl.textContent = streak;
-        localStorage.setItem('score', score);
-        localStorage.setItem('attempts', attempts);
-        localStorage.setItem('streak', streak);
-      }
+      const promptText = `You are a Python tutor. Generate a multiple choice question that includes real Python code that must be evaluated. Return ONLY raw JSON: {"question": "...", "options": ["A. ...", "B. ...", "C. ...", "D. ..."], "answer": "..."} (Difficulty: ${difficulty.toUpperCase()})`;
 
-      window.showLesson = function(topic) {
-        const lessons = {
-          vars: "**Variables & Data Types**\n\nPython variables store data. Example:\n```python\nx = 10\nname = 'Rudra'\nis_ready = True\n```\n\nCommon data types: int, float, str, bool.",
-          control: "**If, Else & Loops**\n\nConditional logic and repetition:\n```python\nif x > 5:\n    print('Big')\nelse:\n    print('Small')\n\nfor i in range(3):\n    print(i)\n```",
-          functions: "**Functions & Scope**\n\nFunctions let you reuse logic:\n```python\ndef greet(name):\n    return f\"Hello {name}\"\n\nprint(greet('Rudra'))\n```",
-          lists: "**Lists & Dictionaries**\n\nLists are ordered, dictionaries are key-value:\n```python\nnums = [1, 2, 3]\ndata = {'name': 'Rudra', 'age': 17}\n```",
-          oop: "**Intro to OOP**\n\nOOP uses classes to model data:\n```python\nclass Dog:\n    def __init__(self, name):\n        self.name = name\n\n    def bark(self):\n        print(self.name + ' says woof!')\n```"
-        };
-        lessonContent.innerHTML = `<div class='whitespace-pre-wrap'>${marked.parse(lessons[topic])}</div>`;
-        lessonContent.classList.remove('hidden');
-        lessonContent.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
+      const res = await fetch("/api/gpt-python", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt: promptText })
+      });
+      const data = await res.json();
 
-      function askGPT() {
-        const prompt = document.getElementById('prompt').value;
-        const res = await fetch('/api/gpt-python', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ prompt })
-        });
-        const data = await res.json();
-        responseEl.innerHTML = renderCodeBlock(data.response);
-        choicesEl.classList.add('hidden');
-        nextBtn.classList.add('hidden');
-      }
-
-      async function startLesson () {
-        hasGuessedWrong = false;
-        nextBtn.classList.add("hidden");
-
-        const difficulty = document.getElementById('difficulty').value;
-        const promptText = `
-You are a Python tutor. Generate a multiple choice question that includes real Python code that must be evaluated.
-
-Mix up the question types. Use different phrasings such as:
-- What does this code print?
-- What is the value of ... after execution?
-- What does this function return?
-- Which line will cause an error?
-- What type is the result of this expression?
-
-Return ONLY raw JSON in this format:
-{
-  "question": "<the full Python question INCLUDING code>",
-  "options": ["A. ...", "B. ...", "C. ...", "D. ..."],
-  "answer": "B. ..."
-}
-
-Rules:
-- Include real Python code (use \`print(...)\`, variables, logic, etc)
-- Vary the type of reasoning: logic, scope, functions, errors, expressions
-- The question MUST include a code snippet
-- Output only valid JSON. No markdown. No explanations.
-- Ensure the correct answer is accurate.
-(Difficulty: ${difficulty.toUpperCase()})`;
-
-        const res = await fetch("/api/gpt-python", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ prompt: promptText })
-        });
-
-        const data = await res.json();
-
-        try {
-          const parsed = JSON.parse(data.response);
-          responseEl.innerHTML = renderCodeBlock(parsed.question);
-          correctAnswer = parsed.answer;
-          parsed.options.forEach((opt, i) => {
-            buttons[i].textContent = opt;
-            buttons[i].disabled = false;
-            buttons[i].onclick = () => {
-              attempts++;
-              if (opt === correctAnswer) {
-                if (!hasGuessedWrong) {
-                  score++;
-                  streak++;
-                } else {
-                  streak = 0;
-                }
-                responseEl.innerHTML = renderCodeBlock("✅ Correct!\n\n" + parsed.question);
-                updateStats();
-                Array.from(buttons).forEach((btn) => (btn.disabled = true));
-                nextBtn.classList.remove("hidden");
+      try {
+        const parsed = JSON.parse(data.response);
+        responseEl.innerHTML = renderCodeBlock(parsed.question);
+        correctAnswer = parsed.answer;
+        Array.from(buttons).forEach((btn, i) => {
+          btn.textContent = parsed.options[i];
+          btn.disabled = false;
+          btn.onclick = () => {
+            attempts++;
+            if (btn.textContent === correctAnswer) {
+              if (!hasGuessedWrong) {
+                score++;
+                streak++;
               } else {
-                hasGuessedWrong = true;
                 streak = 0;
-                responseEl.innerHTML = renderCodeBlock("❌ Incorrect. Try again.\n\n" + parsed.question);
-                updateStats();
               }
-            };
-          });
-          choicesEl.classList.remove("hidden");
-        } catch (e) {
-          responseEl.textContent = "⚠️ Could not parse GPT response as JSON.";
-          choicesEl.classList.add("hidden");
-        }
-      };
+              responseEl.innerHTML = renderCodeBlock("✅ Correct!\n\n" + parsed.question);
+              nextBtn.classList.remove("hidden");
+              Array.from(buttons).forEach(b => b.disabled = true);
+            } else {
+              hasGuessedWrong = true;
+              streak = 0;
+              responseEl.innerHTML = renderCodeBlock("❌ Incorrect. Try again.\n\n" + parsed.question);
+            }
+            localStorage.setItem('score', score);
+            localStorage.setItem('attempts', attempts);
+            localStorage.setItem('streak', streak);
+            document.getElementById('score').textContent = score;
+            document.getElementById('attempts').textContent = attempts;
+            document.getElementById('streak').textContent = streak;
+          };
+        });
+        choicesEl.classList.remove("hidden");
+      } catch {
+        responseEl.textContent = "⚠️ Could not parse GPT response as JSON.";
+        choicesEl.classList.add("hidden");
+      }
+    }
 
-      updateStats();
+    window.addEventListener("load", () => {
+      document.getElementById('startLessonBtn').addEventListener('click', startLesson);
+      document.getElementById('askGPTBtn').addEventListener('click', askGPT);
     });
   </script>
 </body>
