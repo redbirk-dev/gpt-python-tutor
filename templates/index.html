@@ -8,23 +8,16 @@
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs/themes/prism-tomorrow.css">
   <style>
-    /* Ensure proper code formatting and wrapping */
     pre[class*="language-"] {
       position: relative;
       padding-left: 3.5em;
       counter-reset: linenumber;
-      white-space: pre-wrap; /* Allow wrapping of text */
-      word-wrap: break-word; /* Allow wrapping of long words */
-      max-width: 100%;
-      overflow-wrap: break-word;
     }
-
-    pre[class*="language-"] code {
+    pre[class*="language-"] code > span.line {
       display: block;
       counter-increment: linenumber;
     }
-
-    pre[class*="language-"] code::before {
+    pre[class*="language-"] code > span.line::before {
       content: counter(linenumber);
       display: inline-block;
       width: 2.5em;
@@ -33,13 +26,17 @@
       text-align: right;
       opacity: 0.3;
     }
-
-    /* Make sure the text is formatted properly for readability */
-    #response {
-      font-size: 14px;
-      word-wrap: break-word;
-      white-space: normal;
-      overflow-wrap: break-word;
+    /* Ensure code blocks wrap and stay within screen bounds */
+    pre {
+      white-space: pre-wrap; /* Wrapping long lines */
+      word-wrap: break-word; /* Break words at line ends */
+      overflow-wrap: break-word; /* Breaks long words into next line */
+      max-width: 100%; /* Prevent overflow */
+      word-break: break-all; /* Allow long words to break across lines */
+      font-family: 'Courier New', Courier, monospace; /* For code formatting */
+      font-size: 0.875rem; /* Smaller font size for code */
+      line-height: 1.5; /* For better readability */
+      margin: 0; /* Ensure no additional margin */
     }
   </style>
 </head>
@@ -83,7 +80,7 @@
         </details>
       </div>
 
-      <pre class="whitespace-pre-wrap bg-gray-800 text-sm p-4 rounded border border-gray-700 font-mono min-h-[120px] transition-all duration-300 ease-in-out overflow-x-auto"><code id="response" class="language-python"></code></pre>
+      <pre class="whitespace-pre-wrap bg-gray-800 text-sm p-4 rounded border border-gray-700 font-mono min-h-[120px] transition-all duration-300 ease-in-out overflow-x-auto" id="response"><code class="language-python"></code></pre>
 
       <div id="choices" class="space-y-2 hidden">
         <button class="choice-btn w-full py-2 rounded bg-gray-700 hover:bg-gray-600"></button>
@@ -132,27 +129,7 @@
         body: JSON.stringify({ prompt })
       });
       const data = await res.json();
-
-      const responseText = data.response.trim();
-
-      // Check if the response is a multiple-choice question
-      if (responseText.startsWith("{")) {
-        const parsed = JSON.parse(responseText);
-        const question = parsed.question;
-        const options = parsed.options.join('<br>');
-        const correctAnswer = parsed.answer;
-
-        // Format the response with multiple choices
-        document.getElementById('response').innerHTML = `
-          <strong>${question}</strong><br>
-          ${options}<br>
-          <strong>Correct Answer:</strong> ${correctAnswer}
-        `;
-      } else {
-        // Handle free-form responses
-        document.getElementById('response').innerHTML = renderCodeBlock(responseText);
-      }
-
+      document.getElementById('response').innerHTML = renderCodeBlock(data.response);
       document.getElementById('choices').classList.add('hidden');
       document.getElementById('nextBtn').classList.add('hidden');
     }
