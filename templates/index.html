@@ -12,14 +12,12 @@
       position: relative;
       padding-left: 3.5em;
       counter-reset: linenumber;
-      word-wrap: break-word;
-      white-space: pre-wrap; /* Make sure text wraps */
     }
-    pre[class*="language-"] code > span.line {
+    pre[class*="language-"] code {
       display: block;
       counter-increment: linenumber;
     }
-    pre[class*="language-"] code > span.line::before {
+    pre[class*="language-"] code::before {
       content: counter(linenumber);
       display: inline-block;
       width: 2.5em;
@@ -90,23 +88,30 @@
   <script src="https://cdn.jsdelivr.net/npm/prismjs/prism.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/prismjs/components/prism-python.min.js"></script>
   <script>
+    // Function to render code with line numbers
     function renderCodeBlock(code) {
-      const words = code.split(' ');
-      let formattedCode = '';
-      let line = '';
-
-      // Group words into lines of 6 words each
-      for (let i = 0; i < words.length; i++) {
-        line += words[i] + ' ';
-        if ((i + 1) % 6 === 0 || i === words.length - 1) {
-          formattedCode += `<span class="line">${line.trim()}</span>\n`;
-          line = ''; // Reset for the next line
-        }
-      }
-
-      return formattedCode;
+      return Prism.highlight(code, Prism.languages.python, 'python')
+        .split('\n')
+        .map(line => `<span class="line">${line}</span>`)
+        .join('\n');
     }
 
+    // Function to show selected lesson
+    function showLesson(topic) {
+      const lessons = {
+        vars: "**Variables & Data Types**\n\n```python\nx = 10\nname = 'Joe'\nis_ready = True\n```",
+        control: "**If, Else & Loops**\n\n```python\nif x > 5:\n    print('Big')\nelse:\n    print('Small')\n\nfor i in range(3):\n    print(i)\n```",
+        functions: "**Functions & Scope**\n\n```python\ndef greet(name):\n    return f\"Hello {name}\"\n\nprint(greet('Joe'))\n```",
+        lists: "**Lists & Dictionaries**\n\n```python\nnums = [1, 2, 3]\ndata = {'name': 'Joe', 'age': 17}\n```",
+        oop: "**Intro to OOP**\n\n```python\nclass Dog:\n    def __init__(self, name):\n        self.name = name\n\n    def bark(self):\n        print(self.name + ' says woof!')\n```"
+      };
+      const lessonContent = document.getElementById('lessonContent');
+      lessonContent.innerHTML = `<div class='whitespace-pre-wrap'>${marked.parse(lessons[topic])}</div>`;
+      lessonContent.classList.remove('hidden');
+      lessonContent.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    // Ask GPT function
     async function askGPT() {
       const prompt = document.getElementById('prompt').value;
       const res = await fetch('/api/gpt-python', {
@@ -120,6 +125,7 @@
       document.getElementById('nextBtn').classList.add('hidden');
     }
 
+    // Start lesson function
     async function startLesson() {
       let score = parseInt(localStorage.getItem('score')) || 0;
       let attempts = parseInt(localStorage.getItem('attempts')) || 0;
