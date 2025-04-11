@@ -9,114 +9,211 @@
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs/themes/prism-tomorrow.css">
   <style>
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #1f2937;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #4b5563;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #6b7280;
+    }
+
+    /* Code block styling */
     pre[class*="language-"] {
       position: relative;
-      padding-left: 3.5em;
-      counter-reset: linenumber;
-      max-width: 100%;
-      overflow-x: auto;
-      white-space: pre-wrap;
-      word-wrap: break-word;
+      padding: 1.5em;
+      margin: 1em 0;
+      border-radius: 0.5em;
+      background: #1a1a1a !important;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     }
-    pre[class*="language-"] code > span.line {
-      display: block;
-      counter-increment: linenumber;
-      white-space: pre-wrap;
-      word-wrap: break-word;
+
+    pre[class*="language-"] code {
+      font-family: 'Fira Code', monospace;
+      font-size: 0.9em;
+      line-height: 1.5;
     }
-    pre[class*="language-"] code > span.line::before {
-      content: counter(linenumber);
-      display: inline-block;
-      width: 2.5em;
-      margin-left: -3.5em;
-      padding-right: 0.5em;
-      text-align: right;
-      opacity: 0.3;
+
+    /* Animations */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
     }
-    /* Add styles for code blocks */
-    code {
-      white-space: pre-wrap;
-      word-wrap: break-word;
-      max-width: 100%;
+
+    .animate-fade-in {
+      animation: fadeIn 0.3s ease-out forwards;
     }
-    /* Ensure the response container doesn't overflow */
-    #response {
-      max-width: 100%;
-      overflow-x: auto;
-      white-space: pre-wrap;
-      word-wrap: break-word;
+
+    /* Lesson content styling */
+    #lessonContent {
+      line-height: 1.6;
+    }
+
+    #lessonContent h1 {
+      font-size: 2em;
+      font-weight: bold;
+      margin: 1em 0 0.5em;
+      color: #60a5fa;
+    }
+
+    #lessonContent h2 {
+      font-size: 1.5em;
+      font-weight: bold;
+      margin: 1em 0 0.5em;
+      color: #93c5fd;
+    }
+
+    #lessonContent p {
+      margin: 1em 0;
+    }
+
+    /* Sidebar styling */
+    .sidebar-link {
+      transition: all 0.2s ease;
+      border-radius: 0.5em;
+      padding: 0.5em 1em;
+      margin: 0.2em 0;
+    }
+
+    .sidebar-link:hover {
+      background: rgba(59, 130, 246, 0.1);
+      transform: translateX(5px);
+    }
+
+    /* Button styling */
+    .btn {
+      transition: all 0.2s ease;
+      border-radius: 0.5em;
+      font-weight: 600;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+
+    /* Score display */
+    .score-display {
+      background: rgba(16, 185, 129, 0.1);
+      border-radius: 0.5em;
+      padding: 0.5em 1em;
+      margin: 1em 0;
+    }
+
+    /* Choice buttons */
+    .choice-btn {
+      transition: all 0.2s ease;
+      border: 1px solid rgba(75, 85, 99, 0.5);
+    }
+
+    .choice-btn:hover {
+      background: rgba(59, 130, 246, 0.1);
+      border-color: #3b82f6;
     }
   </style>
 </head>
-<body class="bg-black text-white font-sans min-h-screen flex items-start justify-center">
-  <div class="flex w-full max-w-7xl mt-10">
-    <!-- Sidebar Lessons -->
-    <aside class="w-1/4 bg-gray-800 p-4 rounded-xl mr-4 space-y-2 text-sm">
-      <h2 class="text-xl font-bold text-blue-400 mb-4">📘 Python Lessons</h2>
-      <ul class="space-y-2">
-        <li><a href="#" onclick="showLesson('basics')" class="hover:underline text-blue-200">Python Basics & Setup</a></li>
-        <li><a href="#" onclick="showLesson('vars')" class="hover:underline text-blue-200">Variables & Data Types</a></li>
-        <li><a href="#" onclick="showLesson('control')" class="hover:underline text-blue-200">If, Else & Loops</a></li>
-        <li><a href="#" onclick="showLesson('functions')" class="hover:underline text-blue-200">Functions & Scope</a></li>
-        <li><a href="#" onclick="showLesson('lists')" class="hover:underline text-blue-200">Lists & Dictionaries</a></li>
-        <li><a href="#" onclick="showLesson('strings')" class="hover:underline text-blue-200">String Manipulation</a></li>
-        <li><a href="#" onclick="showLesson('files')" class="hover:underline text-blue-200">File Handling</a></li>
-        <li><a href="#" onclick="showLesson('exceptions')" class="hover:underline text-blue-200">Error Handling</a></li>
-        <li><a href="#" onclick="showLesson('modules')" class="hover:underline text-blue-200">Modules & Packages</a></li>
-        <li><a href="#" onclick="showLesson('oop')" class="hover:underline text-blue-200">Object-Oriented Programming</a></li>
-        <li><a href="#" onclick="showLesson('decorators')" class="hover:underline text-blue-200">Decorators & Generators</a></li>
-        <li><a href="#" onclick="showLesson('async')" class="hover:underline text-blue-200">Async Programming</a></li>
-        <li><a href="#" onclick="showLesson('testing')" class="hover:underline text-blue-200">Testing & Debugging</a></li>
-        <li><a href="#" onclick="showLesson('databases')" class="hover:underline text-blue-200">Database Operations</a></li>
-        <li><a href="#" onclick="showLesson('web')" class="hover:underline text-blue-200">Web Development</a></li>
-        <li><a href="#" onclick="showLesson('data_science')" class="hover:underline text-blue-200">Data Science Basics</a></li>
-      </ul>
-    </aside>
+<body class="bg-gray-900 text-white font-sans min-h-screen">
+  <div class="container mx-auto px-4 py-8">
+    <div class="flex flex-col lg:flex-row gap-8">
+      <!-- Sidebar Lessons -->
+      <aside class="lg:w-1/4 bg-gray-800 p-6 rounded-xl shadow-lg">
+        <h2 class="text-2xl font-bold text-blue-400 mb-6 flex items-center">
+          <span class="mr-2">📘</span> Python Lessons
+        </h2>
+        <nav class="space-y-2">
+          <a href="#" onclick="showLesson('basics')" class="sidebar-link block text-blue-200 hover:text-white">Python Basics & Setup</a>
+          <a href="#" onclick="showLesson('vars')" class="sidebar-link block text-blue-200 hover:text-white">Variables & Data Types</a>
+          <a href="#" onclick="showLesson('control')" class="sidebar-link block text-blue-200 hover:text-white">If, Else & Loops</a>
+          <a href="#" onclick="showLesson('functions')" class="sidebar-link block text-blue-200 hover:text-white">Functions & Scope</a>
+          <a href="#" onclick="showLesson('lists')" class="sidebar-link block text-blue-200 hover:text-white">Lists & Dictionaries</a>
+          <a href="#" onclick="showLesson('strings')" class="sidebar-link block text-blue-200 hover:text-white">String Manipulation</a>
+          <a href="#" onclick="showLesson('files')" class="sidebar-link block text-blue-200 hover:text-white">File Handling</a>
+          <a href="#" onclick="showLesson('exceptions')" class="sidebar-link block text-blue-200 hover:text-white">Error Handling</a>
+          <a href="#" onclick="showLesson('modules')" class="sidebar-link block text-blue-200 hover:text-white">Modules & Packages</a>
+          <a href="#" onclick="showLesson('oop')" class="sidebar-link block text-blue-200 hover:text-white">Object-Oriented Programming</a>
+          <a href="#" onclick="showLesson('decorators')" class="sidebar-link block text-blue-200 hover:text-white">Decorators & Generators</a>
+          <a href="#" onclick="showLesson('async')" class="sidebar-link block text-blue-200 hover:text-white">Async Programming</a>
+          <a href="#" onclick="showLesson('testing')" class="sidebar-link block text-blue-200 hover:text-white">Testing & Debugging</a>
+          <a href="#" onclick="showLesson('databases')" class="sidebar-link block text-blue-200 hover:text-white">Database Operations</a>
+          <a href="#" onclick="showLesson('web')" class="sidebar-link block text-blue-200 hover:text-white">Web Development</a>
+          <a href="#" onclick="showLesson('data_science')" class="sidebar-link block text-blue-200 hover:text-white">Data Science Basics</a>
+        </nav>
+      </aside>
 
-    <!-- Main App Area -->
-    <div class="flex-1 bg-gray-900 p-6 rounded-xl shadow-xl space-y-6">
-      <h1 class="text-4xl font-bold text-center text-blue-400">GPT Python Tutor</h1>
-      <div class="text-center text-green-400 text-lg">
-        Score: <span id="score">0</span> | Attempts: <span id="attempts">0</span> | Streak: <span id="streak">0</span>
-      </div>
-
-      <div class="flex flex-col sm:flex-row gap-3 items-stretch">
-        <select id="difficulty" class="bg-gray-800 border border-gray-700 text-white rounded px-4 py-3 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-green-500">
-          <option value="easy">🟢 Easy</option>
-          <option value="medium" selected>🟡 Medium</option>
-          <option value="hard">🔴 Hard</option>
-        </select>
-
-        <button id="startLessonBtn" type="button" class="w-full bg-green-600 hover:bg-green-700 text-white py-3 px-4 rounded text-lg font-semibold">
-          Teach Me Python
-        </button>
-        <details class="w-full">
-          <summary class="cursor-pointer bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded text-lg font-semibold text-center w-full">Ask GPT a Question</summary>
-          <div class="mt-3 space-y-2">
-            <textarea id="prompt" placeholder="Ask a Python question..." class="w-full p-4 rounded bg-gray-800 text-white border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm" rows="4"></textarea>
-            <button id="askGPTBtn" type="button" class="w-full bg-blue-500 hover:bg-blue-600 text-white py-3 px-4 rounded text-lg font-semibold">Ask</button>
+      <!-- Main Content Area -->
+      <main class="lg:w-3/4">
+        <div class="bg-gray-800 p-8 rounded-xl shadow-lg">
+          <h1 class="text-4xl font-bold text-center text-blue-400 mb-8">GPT Python Tutor</h1>
+          
+          <div class="score-display text-center text-green-400 text-lg mb-8">
+            <div class="grid grid-cols-3 gap-4">
+              <div>
+                <span class="block text-sm text-gray-400">Score</span>
+                <span id="score" class="text-2xl font-bold">0</span>
+              </div>
+              <div>
+                <span class="block text-sm text-gray-400">Attempts</span>
+                <span id="attempts" class="text-2xl font-bold">0</span>
+              </div>
+              <div>
+                <span class="block text-sm text-gray-400">Streak</span>
+                <span id="streak" class="text-2xl font-bold">0</span>
+              </div>
+            </div>
           </div>
-        </details>
-      </div>
 
-      <div class="overflow-x-auto">
-        <pre class="whitespace-pre-wrap bg-gray-800 text-sm p-4 rounded border border-gray-700 font-mono min-h-[120px] transition-all duration-300 ease-in-out break-words"><code id="response" class="language-python"></code></pre>
-      </div>
+          <div class="flex flex-col sm:flex-row gap-4 mb-8">
+            <select id="difficulty" class="btn bg-gray-700 border border-gray-600 text-white px-4 py-3 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-green-500">
+              <option value="easy">🟢 Easy</option>
+              <option value="medium" selected>🟡 Medium</option>
+              <option value="hard">🔴 Hard</option>
+            </select>
 
-      <div id="choices" class="space-y-2 hidden">
-        <button class="choice-btn w-full py-2 rounded bg-gray-700 hover:bg-gray-600"></button>
-        <button class="choice-btn w-full py-2 rounded bg-gray-700 hover:bg-gray-600"></button>
-        <button class="choice-btn w-full py-2 rounded bg-gray-700 hover:bg-gray-600"></button>
-        <button class="choice-btn w-full py-2 rounded bg-gray-700 hover:bg-gray-600"></button>
-      </div>
+            <button id="startLessonBtn" class="btn bg-green-600 hover:bg-green-700 text-white py-3 px-6 text-lg font-semibold flex-1">
+              Teach Me Python
+            </button>
 
-      <div id="correctAnswer" class="hidden"></div>
+            <details class="flex-1">
+              <summary class="btn bg-blue-600 hover:bg-blue-700 text-white py-3 px-6 text-lg font-semibold text-center cursor-pointer">
+                Ask GPT a Question
+              </summary>
+              <div class="mt-4 space-y-4">
+                <textarea id="prompt" placeholder="Ask a Python question..." class="w-full p-4 rounded bg-gray-700 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm" rows="4"></textarea>
+                <button id="askGPTBtn" class="btn bg-blue-500 hover:bg-blue-600 text-white py-3 px-6 text-lg font-semibold w-full">Ask</button>
+              </div>
+            </details>
+          </div>
 
-      <button id="nextBtn" class="hidden w-full bg-purple-600 hover:bg-purple-700 text-white py-3 px-4 rounded text-lg font-semibold">
-        Next Question
-      </button>
+          <div class="space-y-6">
+            <div class="overflow-x-auto bg-gray-700 rounded-lg p-4">
+              <pre class="whitespace-pre-wrap font-mono text-sm min-h-[120px]"><code id="response" class="language-python"></code></pre>
+            </div>
 
-      <div id="lessonContent" class="bg-gray-800 p-4 mt-4 rounded text-sm hidden"></div>
+            <div id="choices" class="space-y-3 hidden">
+              <button class="choice-btn w-full py-3 px-4 rounded text-left"></button>
+              <button class="choice-btn w-full py-3 px-4 rounded text-left"></button>
+              <button class="choice-btn w-full py-3 px-4 rounded text-left"></button>
+              <button class="choice-btn w-full py-3 px-4 rounded text-left"></button>
+            </div>
+
+            <div id="correctAnswer" class="hidden"></div>
+
+            <button id="nextBtn" class="btn hidden w-full bg-purple-600 hover:bg-purple-700 text-white py-3 px-6 text-lg font-semibold">
+              Next Question
+            </button>
+
+            <div id="lessonContent" class="bg-gray-700 p-6 rounded-lg text-sm hidden animate-fade-in"></div>
+          </div>
+        </div>
+      </main>
     </div>
   </div>
 
@@ -230,10 +327,10 @@
       const difficultyPrompts = {
         easy: "Generate a beginner-friendly multiple choice question about basic Python concepts like variables, print statements, or simple arithmetic. The question should be straightforward and have a clear answer.",
         medium: "Generate an intermediate multiple choice question that includes real Python code that must be evaluated. Focus on functions, loops, or basic data structures.",
-        hard: "Generate an advanced multiple choice question that includes complex Python code involving OOP, decorators, or advanced data structures. The question should test deep understanding of Python concepts."
+        hard: "Generate an advanced multiple choice question that includes complex Python code involving OOP, decorators, or advanced data structures. The question should test deep understanding of Python concepts. Include the code snippet in the question text."
       };
 
-      const promptText = `You are a Python tutor. ${difficultyPrompts[difficulty]} Return ONLY raw JSON in this exact format: {"question": "What is the output of print(2 + 2)?", "options": ["A. 3", "B. 4", "C. 5", "D. 6"], "answer": "B. 4"} (Difficulty: ${difficulty.toUpperCase()})`;
+      const promptText = `You are a Python tutor. ${difficultyPrompts[difficulty]} Return ONLY raw JSON in this exact format: {"question": "What is the output of this code?\\n\\n```python\\nclass Example:\\n    def __init__(self):\\n        self.value = 10\\n\\n    def modify(self):\\n        self.value *= 2\\n        return self.value\\n\\nex = Example()\\nprint(ex.value, ex.modify())\\n```", "options": ["A. 10, 20", "B. 20, 20", "C. 20, 40", "D. 10, 40"], "answer": "A. 10, 20"} (Difficulty: ${difficulty.toUpperCase()})`;
 
       try {
         const res = await fetch("/api/gpt-python", {
@@ -2299,6 +2396,12 @@ df.dropna()  # Remove rows with missing values
       // Highlight code blocks
       document.querySelectorAll('pre code').forEach((block) => {
         block.innerHTML = renderCodeBlock(block.textContent);
+      });
+
+      // Smooth scroll to lesson content
+      lessonContent.scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'start'
       });
     }
   </script>
