@@ -63,7 +63,7 @@
           <summary class="cursor-pointer bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded text-lg font-semibold text-center" onclick="event.stopPropagation()">Ask GPT a Question</summary>
           <div class="mt-3 space-y-2">
             <textarea id="prompt" placeholder="Ask a Python question..." class="w-full p-4 rounded bg-gray-800 text-white border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm" rows="4"></textarea>
-            <button id="askGPTBtn" type="button" class="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded">Ask</button>
+            <button id="askGPTBtn" type="button" class="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded" onclick="askGPT()">Ask</button>
           </div>
         </details>
       </div>
@@ -95,40 +95,14 @@
         .join('\n');
     }
 
-    function formatQuestionResponse(response) {
-      // Parse the response to extract the question, options, and answer
-      const parsedData = JSON.parse(response);
-
-      let questionText = parsedData.question || "";
-      let options = parsedData.options || [];
-      let answer = parsedData.answer || "";
-
-      // Format the question and options properly
-      const formattedOptions = options.map((opt, index) => {
-        return `<button class="choice-btn w-full py-2 rounded bg-gray-700 hover:bg-gray-600" data-answer="${opt}" onclick="handleOptionClick('${opt}')">${opt}</button>`;
-      }).join("");
-
-      return {
-        questionText: questionText,
-        optionsHtml: formattedOptions,
-        correctAnswer: answer
-      };
-    }
-
-    function handleOptionClick(option) {
-      // Handle the option click logic here
-      const selectedAnswer = option;
-      const correctAnswer = document.getElementById("correctAnswer").textContent;
-
-      if (selectedAnswer === correctAnswer) {
-        alert("✅ Correct!");
-      } else {
-        alert("❌ Incorrect, try again.");
-      }
-    }
-
     async function askGPT() {
       const prompt = document.getElementById('prompt').value;
+
+      if (!prompt.trim()) {
+        alert("Please enter a question.");
+        return;
+      }
+
       const res = await fetch('/api/gpt-python', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -136,88 +110,23 @@
       });
 
       const data = await res.json();
+      const question = data.response.question;
+      const options = data.response.options;
+      const answer = data.response.answer;
 
-      const formattedData = formatQuestionResponse(data.response);
+      const formattedQuestion = renderCodeBlock(question);
+      const formattedAnswer = renderCodeBlock(`Answer: ${answer}`);
+      const formattedOptions = options.map(option => renderCodeBlock(option)).join('<br>');
 
-      // Render the formatted question and options in the page
-      const questionContainer = document.getElementById('response');
-      questionContainer.innerHTML = renderCodeBlock(formattedData.questionText);
+      document.getElementById('response').innerHTML = `
+        <div>${formattedQuestion}</div><br>
+        <div><b>Options:</b><br>${formattedOptions}</div><br>
+        <div><b>Correct Answer:</b><br>${formattedAnswer}</div>
+      `;
 
-      const optionsContainer = document.getElementById('choices');
-      optionsContainer.innerHTML = formattedData.optionsHtml;
-      optionsContainer.classList.remove('hidden');
-
-      // Store the correct answer for validation
-      const correctAnswerContainer = document.getElementById('correctAnswer');
-      correctAnswerContainer.textContent = formattedData.correctAnswer;
-
+      document.getElementById('choices').classList.add('hidden');
       document.getElementById('nextBtn').classList.add('hidden');
     }
-
-    async function startLesson() {
-      let score = parseInt(localStorage.getItem('score')) || 0;
-      let attempts = parseInt(localStorage.getItem('attempts')) || 0;
-      let streak = parseInt(localStorage.getItem('streak')) || 0;
-      let hasGuessedWrong = false;
-      const responseEl = document.getElementById('response');
-      const choicesEl = document.getElementById('choices');
-      const nextBtn = document.getElementById('nextBtn');
-      const buttons = document.getElementsByClassName('choice-btn');
-      let correctAnswer = '';
-      const difficulty = document.getElementById('difficulty').value;
-
-      const promptText = `You are a Python tutor. Generate a multiple choice question that includes real Python code that must be evaluated. Return ONLY raw JSON: {"question": "...", "options": ["A. ...", "B. ...", "C. ...", "D. ..."], "answer": "..."} (Difficulty: ${difficulty.toUpperCase()})`;
-
-      const res = await fetch("/api/gpt-python", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: promptText })
-      });
-      const data = await res.json();
-
-      try {
-        const parsed = JSON.parse(data.response);
-        responseEl.innerHTML = renderCodeBlock(parsed.question);
-        correctAnswer = parsed.answer;
-        Array.from(buttons).forEach((btn, i) => {
-          btn.textContent = parsed.options[i];
-          btn.disabled = false;
-          btn.onclick = () => {
-            attempts++;
-            if (btn.textContent === correctAnswer) {
-              if (!hasGuessedWrong) {
-                score++;
-                streak++;
-              } else {
-                streak = 0;
-              }
-              responseEl.innerHTML = renderCodeBlock("✅ Correct!\n\n" + parsed.question);
-              nextBtn.classList.remove("hidden");
-              Array.from(buttons).forEach(b => b.disabled = true);
-            } else {
-              hasGuessedWrong = true;
-              streak = 0;
-              responseEl.innerHTML = renderCodeBlock("❌ Incorrect. Try again.\n\n" + parsed.question);
-            }
-            localStorage.setItem('score', score);
-            localStorage.setItem('attempts', attempts);
-            localStorage.setItem('streak', streak);
-            document.getElementById('score').textContent = score;
-            document.getElementById('attempts').textContent = attempts;
-            document.getElementById('streak').textContent = streak;
-          };
-        });
-        choicesEl.classList.remove("hidden");
-      } catch {
-        responseEl.textContent = "⚠️ Could not parse GPT response as JSON.";
-        choicesEl.classList.add("hidden");
-      }
-    }
-
-    window.addEventListener("load", () => {
-      document.getElementById('startLessonBtn').addEventListener('click', startLesson);
-      document.getElementById('askGPTBtn').addEventListener('click', askGPT);
-    });
   </script>
 </body>
 </html>
