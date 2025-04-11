@@ -12,9 +12,10 @@
       position: relative;
       padding-left: 3.5em;
       counter-reset: linenumber;
-      white-space: pre-wrap; /* Allow wrapping */
-      word-wrap: break-word;
+      white-space: pre-wrap; /* Allow wrapping of text */
+      word-wrap: break-word; /* Allow wrapping of long words */
       max-width: 100%;
+      overflow-wrap: break-word;
     }
 
     pre[class*="language-"] code {
