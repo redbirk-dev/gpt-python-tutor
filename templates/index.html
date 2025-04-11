@@ -213,7 +213,16 @@
       let correctAnswer = '';
       const difficulty = document.getElementById('difficulty').value;
 
-      const promptText = `You are a Python tutor. Generate a multiple choice question that includes real Python code that must be evaluated. Return ONLY raw JSON: {"question": "...", "options": ["A. ...", "B. ...", "C. ...", "D. ..."], "answer": "..."} (Difficulty: ${difficulty.toUpperCase()})`;
+      // Hide lesson content when starting a new quiz
+      document.getElementById('lessonContent').classList.add('hidden');
+
+      const difficultyPrompts = {
+        easy: "Generate a beginner-friendly multiple choice question about basic Python concepts like variables, print statements, or simple arithmetic. The question should be straightforward and have a clear answer.",
+        medium: "Generate an intermediate multiple choice question that includes real Python code that must be evaluated. Focus on functions, loops, or basic data structures.",
+        hard: "Generate an advanced multiple choice question that includes complex Python code involving OOP, decorators, or advanced data structures. The question should test deep understanding of Python concepts."
+      };
+
+      const promptText = `You are a Python tutor. ${difficultyPrompts[difficulty]} Return ONLY raw JSON: {"question": "...", "options": ["A. ...", "B. ...", "C. ...", "D. ..."], "answer": "..."} (Difficulty: ${difficulty.toUpperCase()})`;
 
       const res = await fetch("/api/gpt-python", {
         method: "POST",
@@ -255,8 +264,9 @@
           };
         });
         choicesEl.classList.remove("hidden");
-      } catch {
-        responseEl.textContent = "⚠️ Could not parse GPT response as JSON.";
+      } catch (e) {
+        console.error("Error parsing response:", e);
+        responseEl.textContent = "⚠️ Could not parse GPT response as JSON. Please try again.";
         choicesEl.classList.add("hidden");
       }
     }
