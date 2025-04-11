@@ -80,7 +80,7 @@
         Score: <span id="score">0</span> | Attempts: <span id="attempts">0</span> | Streak: <span id="streak">0</span>
       </div>
 
-      <div class="flex flex-col sm:flex-row gap-3 items-center">
+      <div class="flex flex-col sm:flex-row gap-3 items-stretch">
         <select id="difficulty" class="bg-gray-800 border border-gray-700 text-white rounded px-4 py-3 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-green-500">
           <option value="easy">🟢 Easy</option>
           <option value="medium" selected>🟡 Medium</option>
@@ -233,17 +233,25 @@
         hard: "Generate an advanced multiple choice question that includes complex Python code involving OOP, decorators, or advanced data structures. The question should test deep understanding of Python concepts."
       };
 
-      const promptText = `You are a Python tutor. ${difficultyPrompts[difficulty]} Return ONLY raw JSON: {"question": "...", "options": ["A. ...", "B. ...", "C. ...", "D. ..."], "answer": "..."} (Difficulty: ${difficulty.toUpperCase()})`;
-
-      const res = await fetch("/api/gpt-python", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: promptText })
-      });
-      const data = await res.json();
+      const promptText = `You are a Python tutor. ${difficultyPrompts[difficulty]} Return ONLY raw JSON in this exact format: {"question": "What is the output of print(2 + 2)?", "options": ["A. 3", "B. 4", "C. 5", "D. 6"], "answer": "B. 4"} (Difficulty: ${difficulty.toUpperCase()})`;
 
       try {
+        const res = await fetch("/api/gpt-python", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ prompt: promptText })
+        });
+        const data = await res.json();
+
+        if (!data.response) {
+          throw new Error("No response from server");
+        }
+
         const parsed = JSON.parse(data.response);
+        if (!parsed.question || !parsed.options || !parsed.answer) {
+          throw new Error("Invalid response format");
+        }
+
         responseEl.innerHTML = renderCodeBlock(parsed.question);
         correctAnswer = parsed.answer;
         Array.from(buttons).forEach((btn, i) => {
@@ -276,8 +284,8 @@
         });
         choicesEl.classList.remove("hidden");
       } catch (e) {
-        console.error("Error parsing response:", e);
-        responseEl.textContent = "⚠️ Could not parse GPT response as JSON. Please try again.";
+        console.error("Error:", e);
+        responseEl.innerHTML = renderCodeBlock("⚠️ Error generating question. Please try again.");
         choicesEl.classList.add("hidden");
       }
     }
@@ -344,6 +352,549 @@ python hello.py
 3. Write clear, readable code
 4. Use version control (Git)
 5. Document your code
+`
+      },
+      vars: {
+        title: "Variables & Data Types",
+        content: `
+# Variables and Data Types in Python
+
+## Basic Data Types
+\`\`\`python
+# Numbers
+integer = 42          # int
+float_num = 3.14     # float
+complex_num = 1 + 2j # complex
+
+# Strings
+string1 = "Hello"    # str
+string2 = 'World'    # str
+multi_line = """
+This is a
+multi-line string
+"""
+
+# Booleans
+is_true = True       # bool
+is_false = False     # bool
+
+# None
+empty_value = None   # NoneType
+\`\`\`
+
+## Type Conversion
+\`\`\`python
+# Converting between types
+num_str = "42"
+num_int = int(num_str)    # Convert string to integer
+num_float = float(num_str)  # Convert string to float
+str_num = str(42)         # Convert number to string
+
+# Type checking
+print(type(42))      # <class 'int'>
+print(type(3.14))    # <class 'float'>
+print(type("Hello")) # <class 'str'>
+\`\`\`
+
+## Variables and Assignment
+\`\`\`python
+# Single assignment
+x = 10
+y = "Hello"
+
+# Multiple assignment
+a, b, c = 1, 2, 3
+
+# Augmented assignment
+x += 1  # Same as x = x + 1
+x -= 1  # Same as x = x - 1
+x *= 2  # Same as x = x * 2
+x /= 2  # Same as x = x / 2
+
+# Constants (by convention)
+MAX_VALUE = 100
+PI = 3.14159
+\`\`\`
+
+## Best Practices
+1. Use meaningful variable names
+2. Follow Python naming conventions
+3. Use appropriate data types
+4. Initialize variables before use
+5. Use type hints when possible
+6. Document complex data structures
+7. Use constants for fixed values
+8. Keep variable scope in mind
+`
+      },
+      control: {
+        title: "If, Else & Loops",
+        content: `
+# Control Flow in Python
+
+## If Statements
+\`\`\`python
+# Basic if statement
+age = 18
+if age >= 18:
+    print("You are an adult")
+
+# if-else statement
+if age >= 18:
+    print("You are an adult")
+else:
+    print("You are a minor")
+
+# if-elif-else statement
+score = 85
+if score >= 90:
+    grade = 'A'
+elif score >= 80:
+    grade = 'B'
+elif score >= 70:
+    grade = 'C'
+else:
+    grade = 'D'
+
+# Nested if statements
+if age >= 18:
+    if has_license:
+        print("You can drive")
+    else:
+        print("You need a license")
+\`\`\`
+
+## Loops
+
+### For Loops
+\`\`\`python
+# Basic for loop
+for i in range(5):
+    print(i)  # Prints 0 to 4
+
+# Loop through a list
+fruits = ['apple', 'banana', 'cherry']
+for fruit in fruits:
+    print(fruit)
+
+# Loop with enumerate
+for index, fruit in enumerate(fruits):
+    print(f"{index}: {fruit}")
+
+# Loop through dictionary
+person = {'name': 'John', 'age': 30}
+for key, value in person.items():
+    print(f"{key}: {value}")
+\`\`\`
+
+### While Loops
+\`\`\`python
+# Basic while loop
+count = 0
+while count < 5:
+    print(count)
+    count += 1
+
+# While loop with break
+while True:
+    user_input = input("Enter 'q' to quit: ")
+    if user_input == 'q':
+        break
+
+# While loop with continue
+number = 0
+while number < 10:
+    number += 1
+    if number % 2 == 0:
+        continue
+    print(number)
+\`\`\`
+
+## Loop Control
+\`\`\`python
+# break statement
+for i in range(10):
+    if i == 5:
+        break
+    print(i)
+
+# continue statement
+for i in range(5):
+    if i == 2:
+        continue
+    print(i)
+
+# else clause in loops
+for i in range(5):
+    print(i)
+else:
+    print("Loop completed successfully")
+\`\`\`
+
+## Best Practices
+1. Use meaningful loop variables
+2. Avoid infinite loops
+3. Use appropriate loop type
+4. Keep loop bodies simple
+5. Use break and continue wisely
+6. Consider loop efficiency
+7. Use list comprehensions when possible
+8. Document complex loops
+`
+      },
+      functions: {
+        title: "Functions & Scope",
+        content: `
+# Functions and Scope in Python
+
+## Function Definition
+\`\`\`python
+# Basic function
+def greet():
+    print("Hello, World!")
+
+# Function with parameters
+def greet(name):
+    print(f"Hello, {name}!")
+
+# Function with default parameters
+def greet(name="World"):
+    print(f"Hello, {name}!")
+
+# Function with multiple parameters
+def add(a, b):
+    return a + b
+
+# Function with type hints
+def multiply(x: int, y: int) -> int:
+    return x * y
+\`\`\`
+
+## Function Arguments
+\`\`\`python
+# Positional arguments
+def greet(name, greeting):
+    print(f"{greeting}, {name}!")
+
+greet("John", "Hello")
+
+# Keyword arguments
+greet(greeting="Hi", name="Alice")
+
+# Arbitrary arguments
+def sum_numbers(*args):
+    return sum(args)
+
+print(sum_numbers(1, 2, 3, 4))
+
+# Keyword arbitrary arguments
+def print_info(**kwargs):
+    for key, value in kwargs.items():
+        print(f"{key}: {value}")
+
+print_info(name="John", age=30, city="New York")
+\`\`\`
+
+## Variable Scope
+\`\`\`python
+# Global scope
+x = 10
+
+def function1():
+    # Local scope
+    y = 20
+    print(x)  # Can access global x
+    print(y)  # Can access local y
+
+def function2():
+    global x  # Declare global variable
+    x = 30    # Modify global x
+    print(x)
+
+# Nonlocal scope
+def outer():
+    x = 10
+    def inner():
+        nonlocal x
+        x = 20
+    inner()
+    print(x)  # Prints 20
+\`\`\`
+
+## Lambda Functions
+\`\`\`python
+# Basic lambda
+square = lambda x: x ** 2
+print(square(5))  # 25
+
+# Lambda with multiple arguments
+add = lambda x, y: x + y
+print(add(3, 4))  # 7
+
+# Lambda with map
+numbers = [1, 2, 3, 4, 5]
+squares = list(map(lambda x: x ** 2, numbers))
+print(squares)  # [1, 4, 9, 16, 25]
+
+# Lambda with filter
+evens = list(filter(lambda x: x % 2 == 0, numbers))
+print(evens)  # [2, 4]
+\`\`\`
+
+## Best Practices
+1. Use descriptive function names
+2. Keep functions focused and small
+3. Use type hints when possible
+4. Document function behavior
+5. Use appropriate scope
+6. Handle errors properly
+7. Use lambda functions sparingly
+8. Follow PEP 8 style guide
+`
+      },
+      lists: {
+        title: "Lists & Dictionaries",
+        content: `
+# Lists and Dictionaries in Python
+
+## Lists
+\`\`\`python
+# Creating lists
+numbers = [1, 2, 3, 4, 5]
+mixed = [1, "hello", 3.14, True]
+empty = []
+
+# List operations
+numbers.append(6)        # Add to end
+numbers.insert(0, 0)     # Insert at index
+numbers.remove(3)        # Remove value
+popped = numbers.pop()   # Remove and return last element
+length = len(numbers)    # Get length
+
+# List slicing
+numbers = [0, 1, 2, 3, 4, 5]
+print(numbers[1:4])    # [1, 2, 3]
+print(numbers[:3])     # [0, 1, 2]
+print(numbers[2:])     # [2, 3, 4, 5]
+print(numbers[::2])    # [0, 2, 4]
+print(numbers[::-1])   # [5, 4, 3, 2, 1, 0]
+
+# List comprehension
+squares = [x**2 for x in range(5)]
+evens = [x for x in range(10) if x % 2 == 0]
+\`\`\`
+
+## Dictionaries
+\`\`\`python
+# Creating dictionaries
+person = {
+    'name': 'John',
+    'age': 30,
+    'city': 'New York'
+}
+empty_dict = {}
+
+# Dictionary operations
+person['email'] = 'john@example.com'  # Add/update
+del person['age']                     # Delete
+value = person.get('name')            # Safe get
+keys = person.keys()                  # Get keys
+values = person.values()              # Get values
+items = person.items()                # Get items
+
+# Dictionary comprehension
+squares = {x: x**2 for x in range(5)}
+filtered = {k: v for k, v in person.items() if k != 'age'}
+\`\`\`
+
+## Common Operations
+\`\`\`python
+# List operations
+numbers = [1, 2, 3, 4, 5]
+numbers.sort()                    # Sort in place
+sorted_nums = sorted(numbers)     # Return new sorted list
+numbers.reverse()                 # Reverse in place
+reversed_nums = reversed(numbers) # Return reversed iterator
+
+# Dictionary operations
+person = {'name': 'John', 'age': 30}
+person.update({'city': 'New York'})  # Update multiple items
+person.setdefault('email', 'default@example.com')  # Set if not exists
+merged = {**person, **{'phone': '123-456-7890'}}  # Merge dictionaries
+\`\`\`
+
+## Nested Structures
+\`\`\`python
+# Nested lists
+matrix = [
+    [1, 2, 3],
+    [4, 5, 6],
+    [7, 8, 9]
+]
+print(matrix[1][1])  # 5
+
+# Nested dictionaries
+users = {
+    'john': {
+        'name': 'John Doe',
+        'age': 30,
+        'contacts': {
+            'email': 'john@example.com',
+            'phone': '123-456-7890'
+        }
+    }
+}
+print(users['john']['contacts']['email'])
+\`\`\`
+
+## Best Practices
+1. Use appropriate data structure
+2. Keep structures simple
+3. Use list comprehensions when possible
+4. Handle missing keys safely
+5. Use meaningful keys
+6. Consider performance
+7. Document complex structures
+8. Use type hints when possible
+`
+      },
+      oop: {
+        title: "Object-Oriented Programming",
+        content: `
+# Object-Oriented Programming in Python
+
+## Classes and Objects
+\`\`\`python
+# Basic class
+class Person:
+    def __init__(self, name, age):
+        self.name = name
+        self.age = age
+
+    def greet(self):
+        return f"Hello, my name is {self.name}"
+
+# Creating objects
+person = Person("John", 30)
+print(person.greet())
+print(person.name)
+print(person.age)
+\`\`\`
+
+## Inheritance
+\`\`\`python
+# Base class
+class Animal:
+    def __init__(self, name):
+        self.name = name
+
+    def speak(self):
+        pass
+
+# Derived class
+class Dog(Animal):
+    def speak(self):
+        return f"{self.name} says Woof!"
+
+class Cat(Animal):
+    def speak(self):
+        return f"{self.name} says Meow!"
+
+# Using inheritance
+dog = Dog("Buddy")
+cat = Cat("Whiskers")
+print(dog.speak())
+print(cat.speak())
+\`\`\`
+
+## Encapsulation
+\`\`\`python
+class BankAccount:
+    def __init__(self):
+        self._balance = 0  # Protected attribute
+        self.__account_number = "12345"  # Private attribute
+
+    def deposit(self, amount):
+        if amount > 0:
+            self._balance += amount
+            return True
+        return False
+
+    def get_balance(self):
+        return self._balance
+
+    @property
+    def balance(self):
+        return self._balance
+
+    @balance.setter
+    def balance(self, value):
+        if value >= 0:
+            self._balance = value
+\`\`\`
+
+## Polymorphism
+\`\`\`python
+class Shape:
+    def area(self):
+        pass
+
+class Rectangle(Shape):
+    def __init__(self, width, height):
+        self.width = width
+        self.height = height
+
+    def area(self):
+        return self.width * self.height
+
+class Circle(Shape):
+    def __init__(self, radius):
+        self.radius = radius
+
+    def area(self):
+        return 3.14 * self.radius ** 2
+
+# Using polymorphism
+shapes = [Rectangle(4, 5), Circle(3)]
+for shape in shapes:
+    print(f"Area: {shape.area()}")
+\`\`\`
+
+## Class Methods and Static Methods
+\`\`\`python
+class Date:
+    def __init__(self, year, month, day):
+        self.year = year
+        self.month = month
+        self.day = day
+
+    @classmethod
+    def from_string(cls, date_string):
+        year, month, day = map(int, date_string.split('-'))
+        return cls(year, month, day)
+
+    @staticmethod
+    def is_valid_date(date_string):
+        try:
+            year, month, day = map(int, date_string.split('-'))
+            return 1 <= month <= 12 and 1 <= day <= 31
+        except:
+            return False
+
+# Using class and static methods
+date = Date.from_string('2024-03-14')
+print(Date.is_valid_date('2024-03-14'))
+\`\`\`
+
+## Best Practices
+1. Use meaningful class names
+2. Follow single responsibility principle
+3. Use inheritance appropriately
+4. Implement proper encapsulation
+5. Use properties for getters/setters
+6. Document classes and methods
+7. Use type hints when possible
+8. Follow PEP 8 style guide
 `
       },
       strings: {
@@ -1185,7 +1736,7 @@ def calculator():
 
 def test_add(calculator):
     assert calculator.add(3, 5) == 8
-    assert calculator.add(-1, 1) == 0
+    assert calculator.subtract(5, 3) == 2
 
 def test_subtract(calculator):
     assert calculator.subtract(5, 3) == 2
