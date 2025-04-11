@@ -8,19 +8,24 @@
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs/themes/prism-tomorrow.css">
   <style>
+    pre {
+      white-space: pre-wrap; /* Allow wrapping of long lines */
+      word-wrap: break-word; /* Break long words if needed */
+      max-width: 100%; /* Ensures the code block doesn't overflow */
+      overflow-wrap: break-word;
+    }
+
     pre[class*="language-"] {
       position: relative;
       padding-left: 3.5em;
       counter-reset: linenumber;
-      max-width: 100%
-      white-space: pre-wrap; /* Allows wrapping */
-      word-wrap: break-word; /* Break long words */
-      overflow-x: auto; /* Horizontal scrolling */
     }
-    git [class*="language-"] code > span.line {
+
+    pre[class*="language-"] code > span.line {
       display: block;
       counter-increment: linenumber;
     }
+
     pre[class*="language-"] code > span.line::before {
       content: counter(linenumber);
       display: inline-block;
