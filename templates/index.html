@@ -77,7 +77,7 @@
         <button class="choice-btn w-full py-2 rounded bg-gray-700 hover:bg-gray-600"></button>
       </div>
 
-      <button id="nextBtn" id="startLessonBtn" class="hidden w-full bg-purple-600 hover:bg-purple-700 text-white py-3 px-4 rounded text-lg font-semibold">
+      <button id="nextBtn" class="hidden w-full bg-purple-600 hover:bg-purple-700 text-white py-3 px-4 rounded text-lg font-semibold">
         Next Question
       </button>
 
@@ -95,9 +95,67 @@
         .join('\n');
     }
 
-    window.addEventListener("load", () => {
-      document.getElementById('startLessonBtn').addEventListener('click', window.startLesson);
-      document.getElementById('askGPTBtn').addEventListener('click', window.askGPT);
+    function showLesson(topic) {
+  const lessons = {
+    vars: "**Variables & Data Types**
+
+Python variables store data. Example:
+```python
+x = 10
+name = 'Rudra'
+is_ready = True
+```
+
+Common data types: int, float, str, bool.",
+    control: "**If, Else & Loops**
+
+Conditional logic and repetition:
+```python
+if x > 5:
+    print('Big')
+else:
+    print('Small')
+
+for i in range(3):
+    print(i)
+```",
+    functions: "**Functions & Scope**
+
+Functions let you reuse logic:
+```python
+def greet(name):
+    return f\"Hello {name}\"
+
+print(greet('Rudra'))
+```",
+    lists: "**Lists & Dictionaries**
+
+Lists are ordered, dictionaries are key-value:
+```python
+nums = [1, 2, 3]
+data = {'name': 'Rudra', 'age': 17}
+```",
+    oop: "**Intro to OOP**
+
+OOP uses classes to model data:
+```python
+class Dog:
+    def __init__(self, name):
+        self.name = name
+
+    def bark(self):
+        print(self.name + ' says woof!')
+```"
+  };
+  const lessonContent = document.getElementById('lessonContent');
+  lessonContent.innerHTML = `<div class='whitespace-pre-wrap'>${marked.parse(lessons[topic])}</div>`;
+  lessonContent.classList.remove('hidden');
+  lessonContent.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+window.addEventListener("load", () => {
+      document.getElementById('startLessonBtn').addEventListener('click', startLesson);
+      document.getElementById('askGPTBtn').addEventListener('click', askGPT);
       let score = parseInt(localStorage.getItem('score')) || 0;
       let attempts = parseInt(localStorage.getItem('attempts')) || 0;
       let streak = parseInt(localStorage.getItem('streak')) || 0;
@@ -134,7 +192,7 @@
         lessonContent.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
 
-      window.askGPT = async function() {
+      function askGPT() {
         const prompt = document.getElementById('prompt').value;
         const res = await fetch('/api/gpt-python', {
           method: 'POST',
@@ -147,7 +205,7 @@
         nextBtn.classList.add('hidden');
       }
 
-      window.startLesson = async function () {
+      async function startLesson () {
         hasGuessedWrong = false;
         nextBtn.classList.add("hidden");
 
