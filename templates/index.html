@@ -13,10 +13,16 @@
       position: relative;
       padding-left: 3.5em;
       counter-reset: linenumber;
+      max-width: 100%;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-wrap: break-word;
     }
     pre[class*="language-"] code > span.line {
       display: block;
       counter-increment: linenumber;
+      white-space: pre-wrap;
+      word-wrap: break-word;
     }
     pre[class*="language-"] code > span.line::before {
       content: counter(linenumber);
@@ -26,6 +32,19 @@
       padding-right: 0.5em;
       text-align: right;
       opacity: 0.3;
+    }
+    /* Add styles for code blocks */
+    code {
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      max-width: 100%;
+    }
+    /* Ensure the response container doesn't overflow */
+    #response {
+      max-width: 100%;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-wrap: break-word;
     }
   </style>
 </head>
@@ -69,7 +88,9 @@
         </details>
       </div>
 
-      <pre class="whitespace-pre-wrap bg-gray-800 text-sm p-4 rounded border border-gray-700 font-mono min-h-[120px] transition-all duration-300 ease-in-out overflow-x-auto"><code id="response" class="language-python"></code></pre>
+      <div class="overflow-x-auto">
+        <pre class="whitespace-pre-wrap bg-gray-800 text-sm p-4 rounded border border-gray-700 font-mono min-h-[120px] transition-all duration-300 ease-in-out break-words"><code id="response" class="language-python"></code></pre>
+      </div>
 
       <div id="choices" class="space-y-2 hidden">
         <button class="choice-btn w-full py-2 rounded bg-gray-700 hover:bg-gray-600"></button>
