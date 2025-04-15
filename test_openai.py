@@ -1,6 +1,7 @@
 import openai
 import os
 from dotenv import load_dotenv
+from openai import OpenAI
 
 # Load environment variables
 load_dotenv()
@@ -16,11 +17,11 @@ print(f"OpenAI version: {openai.__version__}")
 
 # Try to initialize the OpenAI client
 try:
-    # Set the API key directly
-    openai.api_key = os.getenv('OPENAI_API_KEY')
+    # Initialize the client with the new format
+    client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'), base_url=None)
     
-    # Try a different approach - use the older API format
-    response = openai.ChatCompletion.create(
+    # Use the new API format
+    response = client.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=[{"role": "user", "content": "Hello, how are you?"}]
     )
