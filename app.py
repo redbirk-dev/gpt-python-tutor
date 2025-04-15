@@ -9,11 +9,12 @@ import os
 import json
 import re
 from datetime import datetime
+from openai import OpenAI
 
 load_dotenv()
 
 # Initialize OpenAI client with API key
-openai.api_key = os.getenv('OPENAI_API_KEY')
+client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'your-secret-key')
@@ -85,8 +86,8 @@ def ask_gpt():
         if not os.getenv('OPENAI_API_KEY'):
             return jsonify({"error": "OpenAI API key is not configured"}), 500
             
-        # Use the OpenAI API with version 0.28 format
-        response = openai.ChatCompletion.create(
+        # Use the OpenAI API with the new format (v1.0.0+)
+        response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
                 {"role": "system", "content": "You are a Python programming tutor. Provide clear, concise explanations with code examples."},
@@ -94,7 +95,7 @@ def ask_gpt():
             ]
         )
         
-        content = response.choices[0].message['content']
+        content = response.choices[0].message.content
         
         # Return the response directly
         return jsonify({"response": content})

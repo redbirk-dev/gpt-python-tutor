@@ -1,0 +1,5 @@
+[33m8c65348[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m Initial commit of GPT Python Tutor application
+[33m699318d[m Fix button functionality and improve error handling
+[33m287a48d[m Enhance UI with modern styling, animations, and improved layout
+[33md6ef8d6[m Add comprehensive content for Variables, Control Flow, Functions, Lists/Dictionaries, and OOP lessons
+[33m992e0d0[m Fix button alignment in Ask GPT section
