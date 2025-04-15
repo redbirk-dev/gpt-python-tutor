@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Python Tutor{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    {% if current_user.is_authenticated %}
+        <h1 class="mb-4">Welcome back, {{ current_user.username }}!</h1>
+        
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <h3>Completed Lessons</h3>
+                    <div class="stat-number">{{ current_user.completed_lessons|default(0) }}</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <h3>Quiz Score</h3>
+                    <div class="stat-number">{{ current_user.quiz_score|default(0) }}%</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <h3>Learning Streak</h3>
+                    <div class="stat-number">{{ current_user.learning_streak|default(0) }} days</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Recent Activity</h3>
+                    </div>
+                    <div class="card-body">
+                        {% if recent_activity %}
+                            <ul class="list-group">
+                                {% for activity in recent_activity %}
+                                    <li class="list-group-item">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span>{{ activity.description }}</span>
+                                            <small class="text-muted">{{ activity.timestamp.strftime('%Y-%m-%d %H:%M') }}</small>
+                                        </div>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p class="text-center">No recent activity. Start learning to see your progress!</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Recommended Next Steps</h3>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-group">
+                            {% for lesson in recommended_lessons %}
+                                <li class="list-group-item">
+                                    <a href="{{ url_for('lesson', lesson_id=lesson.id) }}" class="text-decoration-none">
+                                        {{ lesson.title }}
+                                    </a>
+                                    <span class="badge bg-primary float-end">{{ lesson.difficulty }}</span>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            <h2>Welcome to Python Tutor!</h2>
+            <p>Start your Python learning journey today. Our interactive platform helps you:</p>
+            <ul>
+                <li>Learn Python programming from basics to advanced concepts</li>
+                <li>Practice with interactive exercises and quizzes</li>
+                <li>Track your progress and earn achievements</li>
+                <li>Get personalized recommendations based on your learning style</li>
+            </ul>
+            <p class="mt-3">
+                <a href="{{ url_for('login') }}" class="btn btn-primary me-2">Login</a>
+                <a href="{{ url_for('register') }}" class="btn btn-outline-primary">Register</a>
+            </p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %} 

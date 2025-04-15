@@ -3,7 +3,6 @@ from flask_cors import CORS
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from models import db, User, Progress, QuizScore, Visitor
-import openai
 from dotenv import load_dotenv
 import os
 import json
@@ -13,7 +12,7 @@ from openai import OpenAI
 
 load_dotenv()
 
-# Initialize OpenAI client with API key
+# Initialize OpenAI client with just the API key
 client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
 
 app = Flask(__name__)
@@ -30,6 +29,10 @@ login_manager.login_view = 'login'
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
+
+# Create database tables if they don't exist
+with app.app_context():
+    db.create_all()
 
 @app.route('/')
 def index():
@@ -78,28 +81,31 @@ def logout():
 
 @app.route('/api/gpt-python', methods=['POST'])
 def ask_gpt():
-    data = request.get_json()
-    prompt = data.get('prompt', '')
-    
     try:
-        # Check if OpenAI API key is set
         if not os.getenv('OPENAI_API_KEY'):
             return jsonify({"error": "OpenAI API key is not configured"}), 500
             
-        # Use the OpenAI API with the new format (v1.0.0+)
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "No data provided"}), 400
+            
+        # Accept either 'question' or 'prompt' field
+        prompt = data.get('question') or data.get('prompt')
+        if not prompt:
+            return jsonify({"error": "No question or prompt provided"}), 400
+
+        # Use the OpenAI API
         response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
-                {"role": "system", "content": "You are a Python programming tutor. Provide clear, concise explanations with code examples."},
+                {"role": "system", "content": "You are a helpful Python programming tutor."},
                 {"role": "user", "content": prompt}
             ]
         )
-        
-        content = response.choices[0].message.content
-        
-        # Return the response directly
-        return jsonify({"response": content})
-    
+
+        # Extract the response content
+        answer = response.choices[0].message.content
+        return jsonify({"response": answer})
     except Exception as e:
         app.logger.error(f"Error in ask_gpt: {str(e)}")
         return jsonify({"error": str(e)}), 500
@@ -194,8 +200,5 @@ def set_admin_user(email):
     return False
 
 if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
-        # Set the admin user
-        set_admin_user('rudraat22@gmail.com')
+    # For local development
     app.run(debug=True)

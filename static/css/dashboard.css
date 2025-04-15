@@ -1,0 +1,82 @@
+.stat-card {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+}
+
+.stat-number {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #007bff;
+    margin-top: 10px;
+}
+
+.progress {
+    height: 25px;
+    background-color: #e9ecef;
+    border-radius: 12px;
+}
+
+.progress-bar {
+    background-color: #28a745;
+    border-radius: 12px;
+    transition: width 0.6s ease;
+}
+
+.card {
+    border: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.card-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #e9ecef;
+    padding: 15px 20px;
+}
+
+.card-body {
+    padding: 20px;
+}
+
+.list-group-item {
+    border: none;
+    border-bottom: 1px solid #e9ecef;
+    padding: 15px 20px;
+}
+
+.list-group-item:last-child {
+    border-bottom: none;
+}
+
+.badge {
+    padding: 8px 12px;
+    font-weight: 500;
+}
+
+.alert {
+    border: none;
+    border-radius: 8px;
+    padding: 20px;
+}
+
+.alert-info {
+    background-color: #e3f2fd;
+    color: #0c5460;
+}
+
+.alert a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.alert a:hover {
+    text-decoration: underline;
+} 

@@ -8,4 +8,10 @@ services:
       - key: PYTHON_VERSION
         value: 3.12.0
       - key: OPENAI_API_KEY
-        sync: false 
+        sync: false
+      - key: SECRET_KEY
+        sync: false
+      - key: DATABASE_URL
+        value: sqlite:///python_tutor.db
+      - key: FLASK_ENV
+        value: production 
