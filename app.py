@@ -1,103 +1,200 @@
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, render_template, request, jsonify, redirect, url_for, flash
 from flask_cors import CORS
+from flask_login import LoginManager, login_user, logout_user, login_required, current_user
+from werkzeug.security import generate_password_hash, check_password_hash
+from models import db, User, Progress, QuizScore, Visitor
 import openai
-import os
-import re
-import json
 from dotenv import load_dotenv
+import os
+import json
+import re
+from datetime import datetime
 
 load_dotenv()
-openai.api_key = os.getenv("OPENAI_API_KEY")
+
+# Initialize OpenAI client with API key
+openai.api_key = os.getenv('OPENAI_API_KEY')
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'your-secret-key')
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///python_tutor.db')
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
 CORS(app)
+db.init_app(app)
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
 
 @app.route('/')
 def index():
     return render_template('index.html')
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        user = User.query.filter_by(username=request.form['username']).first()
+        if user and check_password_hash(user.password_hash, request.form['password']):
+            login_user(user)
+            return redirect(url_for('index'))
+        flash('Invalid username or password')
+    return render_template('login.html')
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        if request.form['password'] != request.form['confirm_password']:
+            flash('Passwords do not match')
+            return redirect(url_for('register'))
+            
+        if User.query.filter_by(username=request.form['username']).first():
+            flash('Username already exists')
+            return redirect(url_for('register'))
+        if User.query.filter_by(email=request.form['email']).first():
+            flash('Email already registered')
+            return redirect(url_for('register'))
+        
+        user = User(
+            username=request.form['username'],
+            email=request.form['email'],
+            password_hash=generate_password_hash(request.form['password'])
+        )
+        db.session.add(user)
+        db.session.commit()
+        login_user(user)
+        return redirect(url_for('index'))
+    return render_template('register.html')
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('index'))
 
 @app.route('/api/gpt-python', methods=['POST'])
 def ask_gpt():
     data = request.get_json()
     prompt = data.get('prompt', '')
     
-    # If it's a quiz-style prompt, use the existing format
-    if "Generate a multiple choice question" in prompt:
-        prompt = (
-            "You are a Python tutor. Generate an intermediate to advanced multiple-choice question "
-            "that includes a working Python code snippet, and has only one correct answer. "
-            "Make sure the question is valid, the code runs, and the correct answer is accurate. "
-            "Respond ONLY with raw JSON in this format:\n\n"
-            "{"
-            "\"question\": \"<Insert question that includes the code>\", "
-            "\"options\": [\"A. ...\", \"B. ...\", \"C. ...\", \"D. ...\"], "
-            "\"answer\": \"A. ...\""
-            "}\n\n"
-            "DO NOT explain or include anything else — just JSON with the code question and options. "
-            "The code should be Python 3 and focus on logic, scope, functions, or expressions. "
-            "Avoid trick questions or ambiguous output. Double-check your answer."
-        )
-    else:
-        # For general questions, use a different prompt
-        prompt = (
-            "You are a Python tutor. Answer the following question with clear explanations and code examples where appropriate. "
-            "Format your response using markdown for code blocks and explanations. "
-            "Make sure any code examples are valid Python 3 code that can be executed. "
-            f"Question: {prompt}"
-        )
-
-    # Call OpenAI API
-    response = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo",
-        messages=[{
-            "role": "user",
-            "content": prompt
-        }]
-    )
-
-    content = response.choices[0].message.content.strip()
-
-    # If it's not a quiz-style prompt, return raw GPT response
-    if not "options" in content or not "answer" in content:
-        return jsonify({'response': content})
-
-    # Try to parse as JSON for quiz questions
     try:
-        question_data = json.loads(content)
-        question_text = question_data["question"]
-        options = question_data["options"]
-        correct_answer = question_data["answer"]
-
-        # Try to extract Python code from question
-        code_match = re.search(r"`(.*?)`", question_text)
-        if code_match:
-            code = code_match.group(1)
-            # Run the code in a safe environment
-            try:
-                local_vars = {}
-                exec(f"output = str({code})", {}, local_vars)
-                actual_output = local_vars["output"]
-
-                # Find option that contains actual_output
-                corrected_answer = None
-                for opt in options:
-                    if actual_output in opt:
-                        corrected_answer = opt
-                        break
-
-                if corrected_answer and corrected_answer != correct_answer:
-                    print(f"✅ Corrected GPT's answer from '{correct_answer}' to '{corrected_answer}'")
-                    question_data["answer"] = corrected_answer
-
-            except Exception as e:
-                print(f"⚠️ Error running code: {e}")
-
-        return jsonify({'response': json.dumps(question_data)})
-
+        # Check if OpenAI API key is set
+        if not os.getenv('OPENAI_API_KEY'):
+            return jsonify({"error": "OpenAI API key is not configured"}), 500
+            
+        # Use the OpenAI API with version 0.28 format
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": "You are a Python programming tutor. Provide clear, concise explanations with code examples."},
+                {"role": "user", "content": prompt}
+            ]
+        )
+        
+        content = response.choices[0].message['content']
+        
+        # Return the response directly
+        return jsonify({"response": content})
+    
     except Exception as e:
-        print(f"⚠️ JSON parse error or unexpected format: {e}")
-        return jsonify({'response': content})
+        app.logger.error(f"Error in ask_gpt: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/progress', methods=['POST'])
+@login_required
+def update_progress():
+    data = request.get_json()
+    lesson_id = data.get('lesson_id')
+    completed = data.get('completed', False)
+    
+    progress = Progress.query.filter_by(
+        user_id=current_user.id,
+        lesson_id=lesson_id
+    ).first()
+    
+    if not progress:
+        progress = Progress(
+            user_id=current_user.id,
+            lesson_id=lesson_id,
+            completed=completed
+        )
+        db.session.add(progress)
+    else:
+        progress.completed = completed
+        if completed:
+            progress.completed_at = datetime.utcnow()
+    
+    db.session.commit()
+    return jsonify({"success": True})
+
+@app.route('/api/quiz-score', methods=['POST'])
+@login_required
+def save_quiz_score():
+    data = request.get_json()
+    lesson_id = data.get('lesson_id')
+    score = data.get('score')
+    total_questions = data.get('total_questions')
+    
+    quiz_score = QuizScore(
+        user_id=current_user.id,
+        lesson_id=lesson_id,
+        score=score,
+        total_questions=total_questions
+    )
+    
+    db.session.add(quiz_score)
+    db.session.commit()
+    return jsonify({"success": True})
+
+@app.route('/track-visitor', methods=['POST'])
+def track_visitor():
+    data = request.get_json()
+    page = data.get('page_visited', 'unknown')
+    visitor = Visitor(
+        ip_address=request.remote_addr,
+        user_agent=request.user_agent.string,
+        page_visited=page,
+        is_logged_in=current_user.is_authenticated,
+        user_id=current_user.id if current_user.is_authenticated else None
+    )
+    db.session.add(visitor)
+    db.session.commit()
+    return '', 204
+
+@app.route('/admin/users')
+@login_required
+def admin_users():
+    if not current_user.is_admin:
+        flash('Access denied. Admin privileges required.', 'error')
+        return redirect(url_for('index'))
+    
+    users = User.query.all()
+    visitors = Visitor.query.order_by(Visitor.visited_at.desc()).limit(100).all()
+    visitor_stats = {
+        'total': Visitor.query.count(),
+        'unique_ips': db.session.query(db.func.count(db.distinct(Visitor.ip_address))).scalar(),
+        'logged_in': Visitor.query.filter_by(is_logged_in=True).count(),
+        'today': Visitor.query.filter(
+            Visitor.visited_at >= datetime.utcnow().date()
+        ).count()
+    }
+    return render_template('admin_users.html', users=users, visitors=visitors, stats=visitor_stats)
+
+# Function to set a user as admin (can be called from a command line or admin interface)
+def set_admin_user(email):
+    user = User.query.filter_by(email=email).first()
+    if user:
+        user.is_admin = True
+        db.session.commit()
+        return True
+    return False
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port)
+    with app.app_context():
+        db.create_all()
+        # Set the admin user
+        set_admin_user('rudraat22@gmail.com')
+    app.run(debug=True)

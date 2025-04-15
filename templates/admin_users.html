@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Admin Dashboard</h2>
+    
+    <!-- Visitor Statistics -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h3 class="card-title">Visitor Statistics</h3>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <h4>Total Visitors</h4>
+                        <p class="stat-number">{{ stats.total }}</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <h4>Unique IPs</h4>
+                        <p class="stat-number">{{ stats.unique_ips }}</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <h4>Logged In Users</h4>
+                        <p class="stat-number">{{ stats.logged_in }}</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <h4>Today's Visitors</h4>
+                        <p class="stat-number">{{ stats.today }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Visitors -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h3 class="card-title">Recent Visitors</h3>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>IP Address</th>
+                            <th>Page</th>
+                            <th>User Agent</th>
+                            <th>Logged In</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for visitor in visitors %}
+                        <tr>
+                            <td>{{ visitor.visited_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                            <td>{{ visitor.ip_address }}</td>
+                            <td>{{ visitor.page_visited }}</td>
+                            <td>{{ visitor.user_agent[:50] }}...</td>
+                            <td>{{ "Yes" if visitor.is_logged_in else "No" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- User List -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Registered Users</h3>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Email</th>
+                            <th>Username</th>
+                            <th>Admin</th>
+                            <th>Joined</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                        <tr>
+                            <td>{{ user.email }}</td>
+                            <td>{{ user.username }}</td>
+                            <td>{{ "Yes" if user.is_admin else "No" }}</td>
+                            <td>{{ user.created_at.strftime('%Y-%m-%d') }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.stat-card {
+    text-align: center;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.stat-number {
+    font-size: 24px;
+    font-weight: bold;
+    color: #007bff;
+    margin: 10px 0;
+}
+
+.card {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.card-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.table th {
+    background-color: #f8f9fa;
+}
+</style>
+{% endblock %} 

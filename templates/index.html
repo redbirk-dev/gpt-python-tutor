@@ -34,12 +34,66 @@
       border-radius: 0.5em;
       background: #1a1a1a !important;
       box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      counter-reset: line;
     }
 
     pre[class*="language-"] code {
       font-family: 'Fira Code', monospace;
       font-size: 0.9em;
       line-height: 1.5;
+      display: block;
+    }
+
+    pre[class*="language-"] .line {
+      display: block;
+      counter-increment: line;
+    }
+
+    pre[class*="language-"] .line:before {
+      content: counter(line);
+      display: inline-block;
+      width: 2em;
+      padding-right: 1em;
+      margin-right: 1em;
+      text-align: right;
+      color: #666;
+      border-right: 1px solid #666;
+    }
+
+    /* Prism line numbers styling */
+    pre.line-numbers {
+      padding-left: 3.8em;
+      counter-reset: linenumber;
+    }
+
+    pre.line-numbers > code {
+      position: relative;
+      white-space: inherit;
+    }
+
+    .line-numbers .line-numbers-rows {
+      position: absolute;
+      pointer-events: none;
+      top: 0;
+      font-size: 100%;
+      left: 0;
+      width: 3em;
+      letter-spacing: -1px;
+      border-right: 1px solid #666;
+      user-select: none;
+    }
+
+    .line-numbers-rows > span {
+      display: block;
+      counter-increment: linenumber;
+    }
+
+    .line-numbers-rows > span:before {
+      content: counter(linenumber);
+      color: #666;
+      display: block;
+      padding-right: 0.8em;
+      text-align: right;
     }
 
     /* Animations */
@@ -121,6 +175,25 @@
   </style>
 </head>
 <body class="bg-gray-900 text-white font-sans min-h-screen">
+  <!-- Login/Register Button -->
+  <div class="absolute top-4 right-4 flex gap-4">
+    {% if current_user.is_authenticated %}
+      <div class="relative group" id="profile-dropdown">
+        <a href="#" class="btn bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 text-sm font-semibold rounded-full w-10 h-10 flex items-center justify-center">
+          {{ current_user.username[0].upper() }}
+        </a>
+        <div class="absolute right-0 mt-2 w-48 bg-gray-800 rounded-md shadow-lg py-1 z-10 hidden group-hover:block" id="dropdown-menu">
+          {% if current_user.is_admin %}
+          <a href="/admin/users" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700">Admin Panel</a>
+          {% endif %}
+          <a href="/logout" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700">Logout</a>
+        </div>
+      </div>
+    {% else %}
+      <a href="/login" class="btn bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 text-sm font-semibold">Login</a>
+      <a href="/register" class="btn bg-green-600 hover:bg-green-700 text-white py-2 px-4 text-sm font-semibold">Register</a>
+    {% endif %}
+  </div>
   <div class="container mx-auto px-4 py-8">
     <div class="flex flex-col lg:flex-row gap-8">
       <!-- Sidebar Lessons -->
@@ -219,208 +292,13 @@
 
   <script src="https://cdn.jsdelivr.net/npm/prismjs/prism.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/prismjs/components/prism-python.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs/plugins/line-numbers/prism-line-numbers.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs/plugins/line-numbers/prism-line-numbers.css">
   <script>
-    function renderCodeBlock(code) {
-      return Prism.highlight(code, Prism.languages.python, 'python')
-        .split('\n')
-        .map(line => `<span class="line">${line}</span>`)
-        .join('\n');
-    }
-
-    function formatQuestionResponse(response) {
-      // Parse the response to extract the question, options, and answer
-      const parsedData = JSON.parse(response);
-
-      let questionText = parsedData.question || "";
-      let options = parsedData.options || [];
-      let answer = parsedData.answer || "";
-
-      // Format the question and options properly
-      const formattedOptions = options.map((opt, index) => {
-        return `<button class="choice-btn w-full py-2 rounded bg-gray-700 hover:bg-gray-600" data-answer="${opt}" onclick="handleOptionClick('${opt}')">${opt}</button>`;
-      }).join("");
-
-      return {
-        questionText: questionText,
-        optionsHtml: formattedOptions,
-        correctAnswer: answer
-      };
-    }
-
-    function handleOptionClick(option) {
-      // Handle the option click logic here
-      const selectedAnswer = option;
-      const correctAnswer = document.getElementById("correctAnswer").textContent;
-
-      if (selectedAnswer === correctAnswer) {
-        alert("✅ Correct!");
-      } else {
-        alert("❌ Incorrect, try again.");
-      }
-    }
-
-    async function askGPT() {
-      const prompt = document.getElementById('prompt').value;
-      if (!prompt.trim()) {
-        alert('Please enter a question first!');
-        return;
-      }
-
-      try {
-        const res = await fetch('/api/gpt-python', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ prompt })
-        });
-
-        const data = await res.json();
-        const response = data.response;
-
-        // Check if the response is a quiz question (JSON format)
-        try {
-          const parsedData = JSON.parse(response);
-          if (parsedData.question && parsedData.options && parsedData.answer) {
-            // Handle quiz question
-            const formattedData = formatQuestionResponse(response);
-            
-            // Render the formatted question and options in the page
-            const questionContainer = document.getElementById('response');
-            questionContainer.innerHTML = renderCodeBlock(formattedData.questionText);
-
-            const optionsContainer = document.getElementById('choices');
-            optionsContainer.innerHTML = formattedData.optionsHtml;
-            optionsContainer.classList.remove('hidden');
-
-            // Store the correct answer for validation
-            const correctAnswerContainer = document.getElementById('correctAnswer');
-            correctAnswerContainer.textContent = formattedData.correctAnswer;
-            correctAnswerContainer.classList.remove('hidden');
-
-            document.getElementById('nextBtn').classList.add('hidden');
-          }
-        } catch (e) {
-          // Handle general question response
-          const responseContainer = document.getElementById('response');
-          responseContainer.innerHTML = renderCodeBlock(response);
-          
-          // Hide quiz-related elements
-          document.getElementById('choices').classList.add('hidden');
-          document.getElementById('correctAnswer').classList.add('hidden');
-          document.getElementById('nextBtn').classList.add('hidden');
-        }
-      } catch (error) {
-        console.error("Error fetching response:", error);
-        document.getElementById('response').innerHTML = renderCodeBlock("⚠️ Error: Could not connect to the server. Please try again.");
-      }
-    }
-
-    async function startLesson() {
-      let score = parseInt(localStorage.getItem('score')) || 0;
-      let attempts = parseInt(localStorage.getItem('attempts')) || 0;
-      let streak = parseInt(localStorage.getItem('streak')) || 0;
-      let hasGuessedWrong = false;
-      const responseEl = document.getElementById('response');
-      const choicesEl = document.getElementById('choices');
-      const nextBtn = document.getElementById('nextBtn');
-      const buttons = document.getElementsByClassName('choice-btn');
-      let correctAnswer = '';
-      const difficulty = document.getElementById('difficulty').value;
-
-      // Hide lesson content when starting a new quiz
-      document.getElementById('lessonContent').classList.add('hidden');
-
-      const difficultyPrompts = {
-        easy: "Generate a beginner-friendly multiple choice question about basic Python concepts like variables, print statements, or simple arithmetic. The question should be straightforward and have a clear answer.",
-        medium: "Generate an intermediate multiple choice question that includes real Python code that must be evaluated. Focus on functions, loops, or basic data structures.",
-        hard: "Generate an advanced multiple choice question that includes complex Python code involving OOP, decorators, or advanced data structures. The question should test deep understanding of Python concepts. Include the code snippet in the question text."
-      };
-
-      const promptText = `You are a Python tutor. ${difficultyPrompts[difficulty]} Return ONLY raw JSON in this exact format: {"question": "What is the output of this code?\\n\\n```python\\nclass Example:\\n    def __init__(self):\\n        self.value = 10\\n\\n    def modify(self):\\n        self.value *= 2\\n        return self.value\\n\\nex = Example()\\nprint(ex.value, ex.modify())\\n```", "options": ["A. 10, 20", "B. 20, 20", "C. 20, 40", "D. 10, 40"], "answer": "A. 10, 20"} (Difficulty: ${difficulty.toUpperCase()})`;
-
-      try {
-        const res = await fetch("/api/gpt-python", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ prompt: promptText })
-        });
-        
-        if (!res.ok) {
-          throw new Error(`Server responded with status: ${res.status}`);
-        }
-        
-        const data = await res.json();
-
-        if (!data.response) {
-          throw new Error("No response from server");
-        }
-
-        const parsed = JSON.parse(data.response);
-        if (!parsed.question || !parsed.options || !parsed.answer) {
-          throw new Error("Invalid response format");
-        }
-
-        responseEl.innerHTML = renderCodeBlock(parsed.question);
-        correctAnswer = parsed.answer;
-        
-        // Clear existing buttons
-        choicesEl.innerHTML = '';
-        
-        // Create new buttons for each option
-        parsed.options.forEach((option, i) => {
-          const button = document.createElement('button');
-          button.className = 'choice-btn w-full py-3 px-4 rounded text-left';
-          button.textContent = option;
-          button.onclick = () => {
-            attempts++;
-            if (option === correctAnswer) {
-              if (!hasGuessedWrong) {
-                score++;
-                streak++;
-              } else {
-                streak = 0;
-              }
-              responseEl.innerHTML = renderCodeBlock("✅ Correct!\n\n" + parsed.question);
-              nextBtn.classList.remove("hidden");
-              Array.from(choicesEl.children).forEach(b => b.disabled = true);
-            } else {
-              hasGuessedWrong = true;
-              streak = 0;
-              responseEl.innerHTML = renderCodeBlock("❌ Incorrect. Try again.\n\n" + parsed.question);
-            }
-            localStorage.setItem('score', score);
-            localStorage.setItem('attempts', attempts);
-            localStorage.setItem('streak', streak);
-            document.getElementById('score').textContent = score;
-            document.getElementById('attempts').textContent = attempts;
-            document.getElementById('streak').textContent = streak;
-          };
-          choicesEl.appendChild(button);
-        });
-        
-        choicesEl.classList.remove("hidden");
-        nextBtn.onclick = startLesson;
-      } catch (e) {
-        console.error("Error:", e);
-        responseEl.innerHTML = renderCodeBlock("⚠️ Error generating question. Please try again.");
-        choicesEl.classList.add("hidden");
-      }
-    }
-
-    window.addEventListener("load", () => {
-      document.getElementById('startLessonBtn').addEventListener('click', startLesson);
-      document.getElementById('askGPTBtn').addEventListener('click', askGPT);
-      
-      // Initialize score display
-      const score = parseInt(localStorage.getItem('score')) || 0;
-      const attempts = parseInt(localStorage.getItem('attempts')) || 0;
-      const streak = parseInt(localStorage.getItem('streak')) || 0;
-      
-      document.getElementById('score').textContent = score;
-      document.getElementById('attempts').textContent = attempts;
-      document.getElementById('streak').textContent = streak;
-    });
-
-    // Lesson content
+    // Initialize Prism with line numbers
+    Prism.plugins.lineNumbers = true;
+    
+    // Define lessons object first
     const lessons = {
       basics: {
         title: "Python Basics & Setup",
@@ -1896,7 +1774,7 @@ import logging
 
 # Configure logging
 logging.basicConfig(
-    level=logging.DEBUG,
+    level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
     filename='app.log'
 )
@@ -2401,6 +2279,7 @@ df.dropna()  # Remove rows with missing values
       }
     };
 
+    // Define showLesson function
     function showLesson(lessonId) {
       const lesson = lessons[lessonId];
       if (!lesson) return;
@@ -2423,7 +2302,14 @@ df.dropna()  # Remove rows with missing values
 
       // Highlight code blocks
       document.querySelectorAll('pre code').forEach((block) => {
-        block.innerHTML = renderCodeBlock(block.textContent);
+        // Add the language class if not present
+        if (!block.classList.contains('language-python')) {
+          block.classList.add('language-python');
+        }
+        // Add line-numbers class to pre element
+        block.parentElement.classList.add('line-numbers');
+        // Apply Prism highlighting
+        Prism.highlightElement(block);
       });
 
       // Smooth scroll to lesson content
@@ -2432,6 +2318,319 @@ df.dropna()  # Remove rows with missing values
         block: 'start'
       });
     }
+
+    function renderCodeBlock(code) {
+      // Create a temporary div to hold the parsed markdown
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = marked.parse(code);
+      
+      // Apply syntax highlighting to any code blocks
+      tempDiv.querySelectorAll('pre code').forEach((block) => {
+        // Add the language class if not present
+        if (!block.classList.contains('language-python')) {
+          block.classList.add('language-python');
+        }
+        // Add line-numbers class to pre element
+        block.parentElement.classList.add('line-numbers');
+        // Apply Prism highlighting
+        Prism.highlightElement(block);
+      });
+      
+      return tempDiv.innerHTML;
+    }
+
+    function formatQuestionResponse(response) {
+      // Parse the response to extract the question, options, and answer
+      const parsedData = JSON.parse(response);
+
+      let questionText = parsedData.question || "";
+      let options = parsedData.options || [];
+      let answer = parsedData.answer || "";
+
+      // Format the question and options properly
+      const formattedOptions = options.map((opt, index) => {
+        return `<button class="choice-btn w-full py-2 rounded bg-gray-700 hover:bg-gray-600" data-answer="${opt}" onclick="handleOptionClick('${opt}')">${opt}</button>`;
+      }).join("");
+
+      return {
+        questionText: questionText,
+        optionsHtml: formattedOptions,
+        correctAnswer: answer
+      };
+    }
+
+    function handleOptionClick(option) {
+      // Handle the option click logic here
+      const selectedAnswer = option;
+      const correctAnswer = document.getElementById("correctAnswer").textContent;
+
+      if (selectedAnswer === correctAnswer) {
+        alert("✅ Correct!");
+      } else {
+        alert("❌ Incorrect, try again.");
+      }
+    }
+
+    async function askGPT() {
+      const prompt = document.getElementById('prompt').value;
+      if (!prompt) return;
+
+      document.getElementById('response').innerHTML = renderCodeBlock("Loading...");
+      
+      try {
+        const res = await fetch('/api/gpt-python', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt })
+        });
+
+        if (!res.ok) {
+          throw new Error(`Server responded with status: ${res.status}`);
+        }
+
+        const data = await res.json();
+        
+        if (data.error) {
+          throw new Error(`Server error: ${data.error}`);
+        }
+        
+        const response = data.response;
+
+        // Check if the response is a quiz question (JSON format)
+        try {
+          const parsedData = JSON.parse(response);
+          if (parsedData.question && parsedData.options && parsedData.answer) {
+            // Handle quiz question
+            const formattedData = formatQuestionResponse(response);
+            
+            // Render the formatted question and options in the page
+            const questionContainer = document.getElementById('response');
+            questionContainer.innerHTML = renderCodeBlock(formattedData.questionText);
+
+            const optionsContainer = document.getElementById('choices');
+            optionsContainer.innerHTML = formattedData.optionsHtml;
+            optionsContainer.classList.remove('hidden');
+
+            // Store the correct answer for validation
+            const correctAnswerContainer = document.getElementById('correctAnswer');
+            correctAnswerContainer.textContent = formattedData.correctAnswer;
+            correctAnswerContainer.classList.remove('hidden');
+
+            document.getElementById('nextBtn').classList.add('hidden');
+          }
+        } catch (e) {
+          // Handle general question response
+          const responseContainer = document.getElementById('response');
+          responseContainer.innerHTML = renderCodeBlock(response);
+          
+          // Hide quiz-related elements
+          document.getElementById('choices').classList.add('hidden');
+          document.getElementById('correctAnswer').classList.add('hidden');
+          document.getElementById('nextBtn').classList.add('hidden');
+        }
+      } catch (error) {
+        console.error("Error fetching response:", error);
+        document.getElementById('response').innerHTML = renderCodeBlock(`⚠️ Error: ${error.message || "Could not connect to the server. Please try again."}`);
+      }
+    }
+
+    async function startLesson() {
+      let score = parseInt(localStorage.getItem('score')) || 0;
+      let attempts = parseInt(localStorage.getItem('attempts')) || 0;
+      let streak = parseInt(localStorage.getItem('streak')) || 0;
+      let hasGuessedWrong = false;
+      const responseEl = document.getElementById('response');
+      const choicesEl = document.getElementById('choices');
+      const nextBtn = document.getElementById('nextBtn');
+      let correctAnswer = '';
+      const difficulty = document.getElementById('difficulty').value;
+
+      // Hide lesson content when starting a new quiz
+      document.getElementById('lessonContent').classList.add('hidden');
+      
+      // Show loading message
+      responseEl.innerHTML = renderCodeBlock("Loading question...");
+      choicesEl.classList.add("hidden");
+
+      const difficultyPrompts = {
+        easy: "Generate a beginner-friendly multiple choice question about basic Python concepts like variables, print statements, or simple arithmetic. The question should be straightforward and have a clear answer. Make sure to randomize the position of the correct answer among the options.",
+        medium: "Generate an intermediate multiple choice question that tests Python code evaluation. The question MUST include a code snippet formatted with triple backticks and 'python' language identifier like this:\n\n```python\n<your code here>\n```\n\nFocus on functions, loops, or basic data structures. The code should be 3-6 lines long. Make sure to randomize the position of the correct answer among the options.",
+        hard: "Generate an advanced multiple choice question about Python. The question MUST include a substantial code snippet (6-10 lines) formatted with triple backticks and 'python' language identifier like this:\n\n```python\n<your code here>\n```\n\nFocus on advanced concepts like OOP, decorators, generators, or complex algorithms. Make the code challenging enough to test deep understanding. Make sure to randomize the position of the correct answer among the options."
+      };
+
+      const prompt = `You are a Python tutor. ${difficultyPrompts[difficulty]} 
+Return ONLY raw JSON in this format (do not include any markdown formatting in the response itself):
+{
+  "question": "Your question text here. For hard questions, include the code snippet with proper markdown code block formatting",
+  "options": ["Option A", "Option B", "Option C", "Option D"],
+  "answer": "The correct option (e.g., 'Option A')"
+}`;
+      
+      try {
+        const res = await fetch('/api/gpt-python', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt })
+        });
+
+        if (!res.ok) {
+          throw new Error(`Server responded with status: ${res.status}`);
+        }
+
+        const data = await res.json();
+        
+        if (data.error) {
+          throw new Error(`Server error: ${data.error}`);
+        }
+        
+        if (!data.response) {
+          throw new Error("No response from server");
+        }
+
+        // Clean the response string to ensure it's valid JSON
+        let jsonStr = data.response;
+        // Remove any markdown code block markers
+        jsonStr = jsonStr.replace(/```json\n?/g, '').replace(/```\n?/g, '');
+        // Remove any leading/trailing whitespace
+        jsonStr = jsonStr.trim();
+        
+        try {
+          const parsed = JSON.parse(jsonStr);
+          if (!parsed.question || !parsed.options || !parsed.answer) {
+            throw new Error("Invalid response format");
+          }
+
+          // First convert markdown to HTML
+          const questionHtml = marked.parse(parsed.question);
+          
+          // Create a temporary div to hold the parsed HTML
+          const tempDiv = document.createElement('div');
+          tempDiv.innerHTML = questionHtml;
+          
+          // Apply syntax highlighting to any code blocks
+          tempDiv.querySelectorAll('pre code').forEach((block) => {
+            // Add the language class if not present
+            if (!block.classList.contains('language-python')) {
+              block.classList.add('language-python');
+            }
+            // Add line-numbers class to pre element
+            block.parentElement.classList.add('line-numbers');
+            // Apply Prism highlighting
+            Prism.highlightElement(block);
+          });
+          
+          // Set the formatted content
+          responseEl.innerHTML = tempDiv.innerHTML;
+          
+          correctAnswer = parsed.answer;
+          
+          // Clear existing buttons
+          choicesEl.innerHTML = '';
+          
+          // Create new buttons for each option
+          parsed.options.forEach((option, i) => {
+            const button = document.createElement('button');
+            button.className = 'choice-btn w-full py-2 rounded bg-gray-700 hover:bg-gray-600'
+            button.textContent = option;
+            button.onclick = () => {
+              attempts++;
+              if (option === correctAnswer) {
+                if (!hasGuessedWrong) {
+                  score++;
+                  streak++;
+                } else {
+                  streak = 0;
+                }
+                responseEl.innerHTML = renderCodeBlock("✅ Correct!\n\n" + parsed.question);
+                nextBtn.classList.remove("hidden");
+                Array.from(choicesEl.children).forEach(b => b.disabled = true);
+              } else {
+                hasGuessedWrong = true;
+                streak = 0;
+                responseEl.innerHTML = renderCodeBlock("❌ Incorrect. Try again.\n\n" + parsed.question);
+              }
+              localStorage.setItem('score', score);
+              localStorage.setItem('attempts', attempts);
+              localStorage.setItem('streak', streak);
+              document.getElementById('score').textContent = score;
+              document.getElementById('attempts').textContent = attempts;
+              document.getElementById('streak').textContent = streak;
+            };
+            choicesEl.appendChild(button);
+          });
+
+          choicesEl.classList.remove("hidden");
+          nextBtn.onclick = startLesson;
+        } catch (jsonError) {
+          console.error('JSON Parse Error:', jsonError);
+          console.log('Raw response:', jsonStr);
+          responseEl.innerHTML = renderCodeBlock(`⚠️ Error: Invalid question format. ${jsonError.message}`);
+          choicesEl.classList.add("hidden");
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        responseEl.innerHTML = renderCodeBlock(`⚠️ Error: ${error.message || "Could not generate question. Please try again."}`);
+        choicesEl.classList.add("hidden");
+      }
+    }
+
+    // Event Listeners
+    window.addEventListener("DOMContentLoaded", () => {
+      // Get button elements
+      const startLessonBtn = document.getElementById('startLessonBtn');
+      const askGPTBtn = document.getElementById('askGPTBtn');
+      
+      // Add click event listeners
+      if (startLessonBtn) {
+        startLessonBtn.addEventListener('click', startLesson);
+      }
+      
+      if (askGPTBtn) {
+        askGPTBtn.addEventListener('click', askGPT);
+      }
+      
+      // Initialize score display
+      const score = parseInt(localStorage.getItem('score')) || 0;
+      const attempts = parseInt(localStorage.getItem('attempts')) || 0;
+      const streak = parseInt(localStorage.getItem('streak')) || 0;
+      
+      const scoreEl = document.getElementById('score');
+      const attemptsEl = document.getElementById('attempts');
+      const streakEl = document.getElementById('streak');
+      
+      if (scoreEl) scoreEl.textContent = score;
+      if (attemptsEl) attemptsEl.textContent = attempts;
+      if (streakEl) streakEl.textContent = streak;
+    });
+
+    // Add this at the end of your script section
+    document.addEventListener('DOMContentLoaded', function() {
+      const profileDropdown = document.getElementById('profile-dropdown');
+      const dropdownMenu = document.getElementById('dropdown-menu');
+      
+      if (profileDropdown && dropdownMenu) {
+        let timeoutId;
+        
+        profileDropdown.addEventListener('mouseenter', function() {
+          clearTimeout(timeoutId);
+          dropdownMenu.classList.remove('hidden');
+        });
+        
+        profileDropdown.addEventListener('mouseleave', function() {
+          timeoutId = setTimeout(function() {
+            dropdownMenu.classList.add('hidden');
+          }, 300); // 300ms delay before hiding
+        });
+        
+        dropdownMenu.addEventListener('mouseenter', function() {
+          clearTimeout(timeoutId);
+        });
+        
+        dropdownMenu.addEventListener('mouseleave', function() {
+          dropdownMenu.classList.add('hidden');
+        });
+      }
+    });
   </script>
 </body>
 </html>
