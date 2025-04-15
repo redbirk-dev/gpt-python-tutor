@@ -8,12 +8,12 @@ import os
 import json
 import re
 from datetime import datetime
-from openai import OpenAI
+import openai
 
 load_dotenv()
 
 # Initialize OpenAI client with just the API key
-client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+client = openai.OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'your-secret-key')
