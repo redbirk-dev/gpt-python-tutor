@@ -82,18 +82,28 @@ def logout():
 @app.route('/api/gpt-python', methods=['POST'])
 def ask_gpt():
     try:
-        if not os.getenv('OPENAI_API_KEY'):
+        app.logger.debug("Starting ask_gpt function")
+        api_key = os.getenv('OPENAI_API_KEY')
+        app.logger.debug(f"API key present: {bool(api_key)}")
+        
+        if not api_key:
+            app.logger.error("OpenAI API key is not configured")
             return jsonify({"error": "OpenAI API key is not configured"}), 500
             
         data = request.get_json()
+        app.logger.debug(f"Received data: {data}")
+        
         if not data:
+            app.logger.error("No data provided")
             return jsonify({"error": "No data provided"}), 400
             
         # Accept either 'question' or 'prompt' field
         prompt = data.get('question') or data.get('prompt')
         if not prompt:
+            app.logger.error("No question or prompt provided")
             return jsonify({"error": "No question or prompt provided"}), 400
 
+        app.logger.debug("Making OpenAI API call")
         # Use the OpenAI API
         response = client.chat.completions.create(
             model="gpt-3.5-turbo",
@@ -102,12 +112,14 @@ def ask_gpt():
                 {"role": "user", "content": prompt}
             ]
         )
+        app.logger.debug("OpenAI API call successful")
 
         # Extract the response content
         answer = response.choices[0].message.content
         return jsonify({"response": answer})
     except Exception as e:
         app.logger.error(f"Error in ask_gpt: {str(e)}")
+        app.logger.exception("Full traceback:")
         return jsonify({"error": str(e)}), 500
 
 @app.route('/api/progress', methods=['POST'])
