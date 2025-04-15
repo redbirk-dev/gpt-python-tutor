@@ -12,7 +12,7 @@ import openai
 
 load_dotenv()
 
-# Initialize OpenAI client with just the API key
+# Set OpenAI API key for openai==1.12.0
 openai.api_key = os.getenv('OPENAI_API_KEY')
 
 app = Flask(__name__)
@@ -104,18 +104,17 @@ def ask_gpt():
             return jsonify({"error": "No question or prompt provided"}), 400
 
         app.logger.debug("Making OpenAI API call")
-        # Use the OpenAI API
+        # Use the OpenAI API (for openai==1.12.0)
         response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
             messages=[
                 {"role": "system", "content": "You are a helpful Python programming tutor."},
-                {"role": "user", "content": data.get('question')}
-            ],
-            max_tokens=1000
+                {"role": "user", "content": prompt}
+            ]
         )
         app.logger.debug("OpenAI API call successful")
 
-        # Extract the response text
+        # Extract the response content
         answer = response.choices[0].message.content
         return jsonify({"response": answer})
     except Exception as e:
