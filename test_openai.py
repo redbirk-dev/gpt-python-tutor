@@ -18,7 +18,7 @@ print(f"OpenAI version: {openai.__version__}")
 # Try to initialize the OpenAI client
 try:
     # Initialize the client with the new format
-    client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'), base_url=None)
+    client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
     
     # Use the new API format
     response = client.chat.completions.create(
