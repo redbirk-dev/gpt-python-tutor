@@ -9,11 +9,12 @@ import json
 import re
 from datetime import datetime
 import openai
+from openai import OpenAI
 
-load_dotenv()
+load_dotenv() 
 
-# Set OpenAI API key for openai==1.12.0
-openai.api_key = os.getenv('OPENAI_API_KEY')
+# Initialize OpenAI client
+client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'your-secret-key')
@@ -97,15 +98,13 @@ def ask_gpt():
             app.logger.error("No data provided")
             return jsonify({"error": "No data provided"}), 400
             
-        # Accept either 'question' or 'prompt' field
         prompt = data.get('question') or data.get('prompt')
         if not prompt:
             app.logger.error("No question or prompt provided")
             return jsonify({"error": "No question or prompt provided"}), 400
 
         app.logger.debug("Making OpenAI API call")
-        # Use the OpenAI API (for openai==1.12.0)
-        response = openai.ChatCompletion.create(
+        response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
                 {"role": "system", "content": "You are a helpful Python programming tutor."},
@@ -114,13 +113,13 @@ def ask_gpt():
         )
         app.logger.debug("OpenAI API call successful")
 
-        # Extract the response content
         answer = response.choices[0].message.content
         return jsonify({"response": answer})
     except Exception as e:
-        app.logger.error(f"Error in ask_gpt: {str(e)}")
-        app.logger.exception("Full traceback:")
-        return jsonify({"error": str(e)}), 500
+        import traceback
+        tb = traceback.format_exc()
+        app.logger.error(f"Error in ask_gpt: {str(e)}\n{tb}")
+        return jsonify({"error": f"{str(e)}", "traceback": tb}), 500
 
 @app.route('/api/progress', methods=['POST'])
 @login_required
