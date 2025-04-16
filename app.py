@@ -14,7 +14,12 @@ from openai import OpenAI
 load_dotenv() 
 
 # Initialize OpenAI client
-client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+client = OpenAI(
+    api_key=os.getenv('OPENAI_API_KEY'),
+    # Explicitly set base_url and default_headers to avoid proxy issues
+    base_url="https://api.openai.com/v1",
+    default_headers={"OpenAI-Beta": ""}
+)
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'your-secret-key')
