@@ -1,0 +1,5 @@
+[33m5a2e8af[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m Fix OpenAI client usage
+[33mc1bad8c[m Fix OpenAI client initialization and API call for version 1.12.0
+[33mef76f5f[m abcd
+[33mffc07a4[m Update app configuration and dependencies for deployment
+[33m306597a[m Update app.py with new OpenAI API changes, add dashboard files, and configure .gitignore

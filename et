@@ -1,0 +1,71 @@
+[1mdiff --git a/.env b/.env[m
+[1mindex 56a30e8..940af20 100644[m
+[1m--- a/.env[m
+[1m+++ b/.env[m
+[36m@@ -1,4 +1,5 @@[m
+ [m
+ [m
+ [m
+[31m-OPENAI_API_KEY = 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[m
+\ No newline at end of file[m
+[32m+[m[32mOPENAI_API_KEY = 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[m
+[32m+[m[32mSECRET_KEY=RealSteel007[m
+\ No newline at end of file[m
+[1mdiff --git a/app.py b/app.py[m
+[1mindex ac9cf42..3bc9a3d 100644[m
+[1m--- a/app.py[m
+[1m+++ b/app.py[m
+[36m@@ -9,11 +9,12 @@[m [mimport json[m
+ import re[m
+ from datetime import datetime[m
+ import openai[m
+[32m+[m[32mfrom openai import OpenAI[m
+ [m
+[31m-load_dotenv()[m
+[32m+[m[32mload_dotenv()[m[41m [m
+ [m
+[31m-# Set OpenAI API key for openai==1.12.0[m
+[31m-openai.api_key = os.getenv('OPENAI_API_KEY')[m
+[32m+[m[32m# Initialize OpenAI client[m
+[32m+[m[32mclient = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))[m
+ [m
+ app = Flask(__name__)[m
+ app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'your-secret-key')[m
+[36m@@ -97,15 +98,13 @@[m [mdef ask_gpt():[m
+             app.logger.error("No data provided")[m
+             return jsonify({"error": "No data provided"}), 400[m
+             [m
+[31m-        # Accept either 'question' or 'prompt' field[m
+         prompt = data.get('question') or data.get('prompt')[m
+         if not prompt:[m
+             app.logger.error("No question or prompt provided")[m
+             return jsonify({"error": "No question or prompt provided"}), 400[m
+ [m
+         app.logger.debug("Making OpenAI API call")[m
+[31m-        # Use the OpenAI API (for openai==1.12.0)[m
+[31m-        response = openai.ChatCompletion.create([m
+[32m+[m[32m        response = client.chat.completions.create([m
+             model="gpt-3.5-turbo",[m
+             messages=[[m
+                 {"role": "system", "content": "You are a helpful Python programming tutor."},[m
+[36m@@ -114,13 +113,13 @@[m [mdef ask_gpt():[m
+         )[m
+         app.logger.debug("OpenAI API call successful")[m
+ [m
+[31m-        # Extract the response content[m
+         answer = response.choices[0].message.content[m
+         return jsonify({"response": answer})[m
+     except Exception as e:[m
+[31m-        app.logger.error(f"Error in ask_gpt: {str(e)}")[m
+[31m-        app.logger.exception("Full traceback:")[m
+[31m-        return jsonify({"error": str(e)}), 500[m
+[32m+[m[32m        import traceback[m
+[32m+[m[32m        tb = traceback.format_exc()[m
+[32m+[m[32m        app.logger.error(f"Error in ask_gpt: {str(e)}\n{tb}")[m
+[32m+[m[32m        return jsonify({"error": f"{str(e)}", "traceback": tb}), 500[m
+ [m
+ @app.route('/api/progress', methods=['POST'])[m
+ @login_required[m
+[1mdiff --git a/instance/python_tutor.db b/instance/python_tutor.db[m
+[1mindex fb24926..6fd1e2c 100644[m
+Binary files a/instance/python_tutor.db and b/instance/python_tutor.db differ
