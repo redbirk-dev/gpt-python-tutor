@@ -1,5 +1,6 @@
 import openai
 import os
+import httpx
 from dotenv import load_dotenv
 from openai import OpenAI
 
@@ -17,12 +18,23 @@ print(f"OpenAI version: {openai.__version__}")
 
 # Try to initialize the OpenAI client
 try:
-    # Initialize the client with the new format
+    # Clear any proxy environment variables that might be causing issues
+    if 'HTTP_PROXY' in os.environ:
+        del os.environ['HTTP_PROXY']
+    if 'HTTPS_PROXY' in os.environ:
+        del os.environ['HTTPS_PROXY']
+
+    # Create a custom httpx client without proxies
+    http_client = httpx.Client(
+        base_url="https://api.openai.com/v1",
+        follow_redirects=True,
+        timeout=30.0,
+    )
+
+    # Initialize OpenAI client with the custom http client
     client = OpenAI(
         api_key=os.getenv('OPENAI_API_KEY'),
-        # Explicitly set base_url and default_headers to avoid proxy issues
-        base_url="https://api.openai.com/v1",
-        default_headers={"OpenAI-Beta": ""}
+        http_client=http_client
     )
     
     # Use the new API format

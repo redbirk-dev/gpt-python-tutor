@@ -10,15 +10,27 @@ import re
 from datetime import datetime
 import openai
 from openai import OpenAI
+import httpx
 
 load_dotenv() 
 
-# Initialize OpenAI client
+# Clear any proxy environment variables that might be causing issues
+if 'HTTP_PROXY' in os.environ:
+    del os.environ['HTTP_PROXY']
+if 'HTTPS_PROXY' in os.environ:
+    del os.environ['HTTPS_PROXY']
+
+# Create a custom httpx client without proxies
+http_client = httpx.Client(
+    base_url="https://api.openai.com/v1",
+    follow_redirects=True,
+    timeout=30.0,
+)
+
+# Initialize OpenAI client with the custom http client
 client = OpenAI(
     api_key=os.getenv('OPENAI_API_KEY'),
-    # Explicitly set base_url and default_headers to avoid proxy issues
-    base_url="https://api.openai.com/v1",
-    default_headers={"OpenAI-Beta": ""}
+    http_client=http_client
 )
 
 app = Flask(__name__)
